@@ -74,7 +74,7 @@ bool app_init(int width, int height)
       , 0
       );
   bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-  glfwSetMouseButtonCallback(window, glfw_mouseCallback);
+  //glfwSetMouseButtonCallback(window, glfw_mouseCallback);
   return true;
 }
 
