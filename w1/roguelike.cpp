@@ -257,7 +257,7 @@ static void process_actions(flecs::world &ecs)
 
 void process_turn(flecs::world &ecs)
 {
-  static auto stateMachineAct = ecs.query<StateMachine, Action>();
+  static auto stateMachineAct = ecs.query<StateMachine>();
   if (is_player_acted(ecs))
   {
     if (upd_player_actions_count(ecs))
@@ -265,7 +265,7 @@ void process_turn(flecs::world &ecs)
       // Plan action for NPCs
       ecs.defer([&]
       {
-        stateMachineAct.each([&](flecs::entity e, StateMachine &sm, Action &)
+        stateMachineAct.each([&](flecs::entity e, StateMachine &sm)
         {
           sm.act(0.f, ecs, e);
         });
