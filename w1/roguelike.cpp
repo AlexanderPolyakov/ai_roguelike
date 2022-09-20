@@ -8,25 +8,14 @@
 //for scancodes
 #include <GLFW/glfw3.h>
 
-static void create_monster(flecs::world &ecs, int x, int y)
+static void add_patrol_attack_flee_sm(flecs::entity entity)
 {
-  auto m = ecs.entity()
-    .set(Position{x, y})
-    .set(MovePos{x, y})
-    .set(PatrolPos{x, y})
-    .set(Hitpoints{100.f})
-    .set(Action{EA_NOP})
-    .set(Color{0xffee00ee})
-    .set(StateMachine{})
-    .set(Team{1})
-    .set(NumActions{1, 0})
-    .set(MeleeDamage{20.f});
-
-  m.get([](StateMachine &sm)
+  entity.get([](StateMachine &sm)
   {
     int patrol = sm.addState(create_patrol_state(3.f));
     int moveToEnemy = sm.addState(create_move_to_enemy_state());
     int fleeFromEnemy = sm.addState(create_flee_from_enemy_state());
+
     sm.addTransition(create_enemy_available_transition(3.f), patrol, moveToEnemy);
     sm.addTransition(create_negate_transition(create_enemy_available_transition(5.f)), moveToEnemy, patrol);
 
@@ -37,6 +26,41 @@ static void create_monster(flecs::world &ecs, int x, int y)
 
     sm.addTransition(create_negate_transition(create_enemy_available_transition(7.f)), fleeFromEnemy, patrol);
   });
+}
+
+static void add_patrol_flee_sm(flecs::entity entity)
+{
+  entity.get([](StateMachine &sm)
+  {
+    int patrol = sm.addState(create_patrol_state(3.f));
+    int fleeFromEnemy = sm.addState(create_flee_from_enemy_state());
+
+    sm.addTransition(create_enemy_available_transition(3.f), patrol, fleeFromEnemy);
+    sm.addTransition(create_negate_transition(create_enemy_available_transition(5.f)), fleeFromEnemy, patrol);
+  });
+}
+
+static void add_attack_sm(flecs::entity entity)
+{
+  entity.get([](StateMachine &sm)
+  {
+    sm.addState(create_move_to_enemy_state());
+  });
+}
+
+static flecs::entity create_monster(flecs::world &ecs, int x, int y, uint32_t color)
+{
+  return ecs.entity()
+    .set(Position{x, y})
+    .set(MovePos{x, y})
+    .set(PatrolPos{x, y})
+    .set(Hitpoints{100.f})
+    .set(Action{EA_NOP})
+    .set(Color{color})
+    .set(StateMachine{})
+    .set(Team{1})
+    .set(NumActions{1, 0})
+    .set(MeleeDamage{20.f});
 }
 
 static void create_player(flecs::world &ecs, int x, int y)
@@ -110,10 +134,10 @@ void init_roguelike(flecs::world &ecs)
 {
   register_roguelike_systems(ecs);
 
-  create_monster(ecs, 5, 5);
-  create_monster(ecs, 10, -5);
-  create_monster(ecs, -5, -5);
-  create_monster(ecs, -5, 5);
+  add_patrol_attack_flee_sm(create_monster(ecs, 5, 5, 0xffee00ee));
+  add_patrol_attack_flee_sm(create_monster(ecs, 10, -5, 0xffee00ee));
+  add_patrol_flee_sm(create_monster(ecs, -5, -5, 0xff111111));
+  add_attack_sm(create_monster(ecs, -5, 5, 0xff00ff00));
 
   create_player(ecs, 0, 0);
 
