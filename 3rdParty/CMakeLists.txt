@@ -6,5 +6,3 @@ add_subdirectory("bgfx.cmake")
 add_subdirectory("flecs")    
 add_subdirectory("glfw")    
 
-
-# I hate this
