@@ -13,3 +13,6 @@
 [submodule "3rdParty/flecs"]
 	path = 3rdParty/flecs
 	url = https://github.com/SanderMertens/flecs.git
+[submodule "3rdParty/bgfx.cmake"]
+	path = 3rdParty/bgfx.cmake
+	url = https://github.com/bkaradzic/bgfx.cmake
