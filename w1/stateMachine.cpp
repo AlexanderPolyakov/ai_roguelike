@@ -13,13 +13,13 @@ StateMachine::~StateMachine()
 
 void StateMachine::act(float dt, flecs::world &ecs, flecs::entity entity)
 {
-  if (curStateIdx < states.size())
+  if (curStateIdx < int(states.size()))
   {
-    for (const std::pair<StateTransition*, int> &transition : transitions[curStateIdx])
-      if (transition.first->isAvailable(ecs, entity))
+    for (const auto& [transition, index] : transitions[curStateIdx])
+      if (transition->isAvailable(ecs, entity))
       {
         states[curStateIdx]->exit();
-        curStateIdx = transition.second;
+        curStateIdx = index;
         states[curStateIdx]->enter();
         break;
       }
@@ -31,14 +31,14 @@ void StateMachine::act(float dt, flecs::world &ecs, flecs::entity entity)
 
 int StateMachine::addState(State *st)
 {
-  int idx = states.size();
+  int idx = int(states.size());
   states.push_back(st);
-  transitions.push_back(std::vector<std::pair<StateTransition*, int>>());
+  transitions.emplace_back();
   return idx;
 }
 
 void StateMachine::addTransition(StateTransition *trans, int from, int to)
 {
-  transitions[from].push_back(std::make_pair(trans, to));
+  transitions[from].push_back(std::pair(trans, to));
 }
 

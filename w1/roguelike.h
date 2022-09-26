@@ -1,6 +1,6 @@
 #pragma once
 
-#include <flecs.h>
+#include "flecs_inc.h"
 
 void init_roguelike(flecs::world &ecs);
 void process_turn(flecs::world &ecs);

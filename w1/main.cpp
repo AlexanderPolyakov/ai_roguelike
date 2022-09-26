@@ -4,13 +4,13 @@
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bx/timer.h>
-#include <debugdraw/debugdraw.h>
+#include "debug_draw_inc.h"
 #include "app.h"
-#include <flecs.h>
+#include "flecs_inc.h"
 #include "ecsTypes.h"
 #include "roguelike.h"
 
-int main(int argc, const char **argv)
+int main()
 {
   int width = 1920;
   int height = 1080;

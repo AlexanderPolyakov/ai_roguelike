@@ -1,5 +1,5 @@
 #include "aiLibrary.h"
-#include <flecs.h>
+#include "flecs_inc.h"
 #include "ecsTypes.h"
 #include <bx/rng.h>
 #include <cfloat>
@@ -10,6 +10,7 @@ static bx::RngShr3 rng;
 class AttackEnemyState : public State
 {
 public:
+  virtual ~AttackEnemyState() = default;
   void enter() const override {}
   void exit() const override {}
   void act(float/* dt*/, flecs::world &/*ecs*/, flecs::entity /*entity*/) const override {}
@@ -72,6 +73,7 @@ static void on_closest_enemy_pos(flecs::world &ecs, flecs::entity entity, Callab
 class MoveToEnemyState : public State
 {
 public:
+  virtual ~MoveToEnemyState() = default;
   void enter() const override {}
   void exit() const override {}
   void act(float/* dt*/, flecs::world &ecs, flecs::entity entity) const override
@@ -86,6 +88,7 @@ public:
 class FleeFromEnemyState : public State
 {
 public:
+  virtual ~FleeFromEnemyState() = default;
   FleeFromEnemyState() {}
   void enter() const override {}
   void exit() const override {}
@@ -102,10 +105,11 @@ class PatrolState : public State
 {
   float patrolDist;
 public:
+  virtual ~PatrolState() = default;
   PatrolState(float dist) : patrolDist(dist) {}
   void enter() const override {}
   void exit() const override {}
-  void act(float/* dt*/, flecs::world &ecs, flecs::entity entity) const override
+  void act(float/* dt*/, flecs::world &, flecs::entity entity) const override
   {
     entity.set([&](const Position &pos, const PatrolPos &ppos, Action &a)
     {
@@ -123,9 +127,10 @@ public:
 class NopState : public State
 {
 public:
+  virtual ~NopState() = default;
   void enter() const override {}
   void exit() const override {}
-  void act(float/* dt*/, flecs::world &ecs, flecs::entity entity) const override {}
+  void act(float/* dt*/, flecs::world &, flecs::entity) const override {}
 };
 
 class EnemyAvailableTransition : public StateTransition
@@ -139,7 +144,7 @@ public:
     bool enemiesFound = false;
     entity.get([&](const Position &pos, const Team &t)
     {
-      enemiesQuery.each([&](flecs::entity enemy, const Position &epos, const Team &et)
+      enemiesQuery.each([&](flecs::entity, const Position &epos, const Team &et)
       {
         if (t.team == et.team)
           return;
@@ -156,7 +161,7 @@ class HitpointsLessThanTransition : public StateTransition
   float threshold;
 public:
   HitpointsLessThanTransition(float in_thres) : threshold(in_thres) {}
-  bool isAvailable(flecs::world &ecs, flecs::entity entity) const override
+  bool isAvailable(flecs::world &, flecs::entity entity) const override
   {
     bool hitpointsThresholdReached = false;
     entity.get([&](const Hitpoints &hp)
@@ -170,7 +175,7 @@ public:
 class EnemyReachableTransition : public StateTransition
 {
 public:
-  bool isAvailable(flecs::world &ecs, flecs::entity entity) const override
+  bool isAvailable(flecs::world &, flecs::entity) const override
   {
     return false;
   }

@@ -1,6 +1,6 @@
 #include "roguelike.h"
 #include "ecsTypes.h"
-#include <debugdraw/debugdraw.h>
+#include "debug_draw_inc.h"
 #include "stateMachine.h"
 #include "aiLibrary.h"
 #include "app.h"
@@ -211,7 +211,7 @@ static void process_actions(flecs::world &ecs)
         mpos = nextPos;
     });
     // now move
-    processActions.each([&](flecs::entity entity, Action &a, Position &pos, MovePos &mpos, const MeleeDamage &, const Team&)
+    processActions.each([&](flecs::entity, Action &a, Position &pos, MovePos &mpos, const MeleeDamage &, const Team&)
     {
       pos = mpos;
       a.action = EA_NOP;

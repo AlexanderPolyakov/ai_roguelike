@@ -1,10 +1,11 @@
 #pragma once
 #include <vector>
-#include <flecs.h>
+#include "flecs_inc.h"
 
 class State
 {
 public:
+  virtual ~State() = default;
   virtual void enter() const = 0;
   virtual void exit() const = 0;
   virtual void act(float dt, flecs::world &ecs, flecs::entity entity) const = 0;
