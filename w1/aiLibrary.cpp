@@ -70,6 +70,31 @@ static void on_closest_enemy_pos(flecs::world &ecs, flecs::entity entity, Callab
   });
 }
 
+#include <iostream>
+class HealState : public State
+{
+public:
+  virtual ~HealState() = default;
+  void enter() const override {}
+  void exit() const override {}
+  void act(float/* dt*/, flecs::world&, flecs::entity entity) const override
+  {
+    entity.set([&](const TickCount& count, Hitpoints& hitpoints, HealCooldown& cooldown, const HealAmount& amount, Color& color, Action& a)
+    {
+        a.action = EA_NOP;
+        color.color = 0xffff0000 + int((hitpoints.hitpoints / 100.0f) * 255.0f);
+        if (cooldown.next <= count.count) 
+        {
+            std::cout << "Heal: " << hitpoints.hitpoints << " " << cooldown.next  << "  " << count.count << "\n";
+            hitpoints.hitpoints += amount.amount;   
+            cooldown.next = cooldown.cooldown + count.count;
+        } else {
+            std::cout << "this\n";
+        }
+    });
+  }
+};
+
 class MoveToEnemyState : public State
 {
 public:
@@ -214,6 +239,10 @@ public:
 
 
 // states
+State *create_heal_state()
+{
+  return new HealState();
+}
 State *create_attack_enemy_state()
 {
   return new AttackEnemyState();

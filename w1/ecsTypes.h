@@ -74,6 +74,19 @@ struct NumActions
   int curActions = 0;
 };
 
+struct TickCount 
+{
+    int count = 0;
+};
+
+struct ActionCooldown
+{
+  int cooldown;
+  int next = 0;
+};
+
+struct HealCooldown : ActionCooldown {};
+
 struct MeleeDamage
 {
   float damage = 2.f;
