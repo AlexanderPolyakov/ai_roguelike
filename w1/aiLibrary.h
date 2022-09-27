@@ -3,6 +3,7 @@
 #include "stateMachine.h"
 
 // states
+State *create_follow_state(float followDist);
 State *create_attack_enemy_state();
 State *create_move_to_enemy_state();
 State *create_flee_from_enemy_state();
@@ -11,6 +12,8 @@ State *create_nop_state();
 State *create_heal_state();
 
 // transitions
+StateTransition *create_followee_close_transition(float thres);
+StateTransition *create_followee_hitpoints_less_than_transition(float thres);
 StateTransition *create_enemy_available_transition(float dist);
 StateTransition *create_enemy_reachable_transition();
 StateTransition *create_hitpoints_less_than_transition(float thres);

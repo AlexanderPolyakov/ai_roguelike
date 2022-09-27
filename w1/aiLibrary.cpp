@@ -79,9 +79,8 @@ public:
   void exit() const override {}
   void act(float/* dt*/, flecs::world&, flecs::entity entity) const override
   {
-    entity.set([&](const TickCount& count, HealTarget& target, Hitpoints& hitpoints, HealCooldown& cooldown, const HealAmount& amount, Color& color, Action& a)
+    entity.set([&](const TickCount& count, Hitpoints& hitpoints, HealCooldown& cooldown, Color& color, Action& a)
     {
-        target.target = entity;
         a.action = EA_NOP;
         color.color = 0xffff0000 + int((hitpoints.hitpoints / 100.0f) * 255.0f);
         if (cooldown.next <= count.count) 
@@ -146,6 +145,30 @@ public:
   }
 };
 
+class FollowState : public State
+{
+  float followDist;
+public:
+  virtual ~FollowState() = default;
+  FollowState(float dist) : followDist(dist) {}
+  void enter() const override {}
+  void exit() const override {}
+  void act(float/* dt*/, flecs::world &, flecs::entity entity) const override
+  {
+    entity.set([&](const Position &pos, const FollowTarget &target, Action &a)
+    {
+      auto fpos = *target.target.get<Position>();
+      if (dist(pos, fpos) > followDist)
+        a.action = move_towards(pos, fpos); // do a recovery walk
+      else
+      {
+        // do a random walk
+        a.action = EA_MOVE_START + (rng.gen() % (EA_MOVE_END - EA_MOVE_START));
+      }
+    });
+  }
+};
+
 class NopState : public State
 {
 public:
@@ -194,6 +217,46 @@ public:
   }
 };
 
+class FolloweeCloseTransition : public StateTransition
+{
+    float threshold;
+public:
+    FolloweeCloseTransition(float in_thres) : threshold(in_thres) {}
+    bool isAvailable(flecs::world &, flecs::entity entity) const override
+    {
+    bool reached = false;
+    entity.get([&](const FollowTarget &target, const Position& pos)
+    {
+        target.target.get([&](const Position &fpos)
+        {
+            auto dx = pos.x - fpos.x;
+            auto dy = pos.y - fpos.y;
+            reached = threshold * threshold > dx*dx + dy*dy;
+        });
+    });
+    return reached;
+    }
+};
+
+class FolloweeHitpointsLessThanTransition : public StateTransition
+{
+  float threshold;
+public:
+  FolloweeHitpointsLessThanTransition(float in_thres) : threshold(in_thres) {}
+  bool isAvailable(flecs::world &, flecs::entity entity) const override
+  {
+    bool hitpointsThresholdReached = false;
+    entity.get([&](const FollowTarget &target)
+    {
+        target.target.get([&](const Hitpoints &hp)
+        {
+          hitpointsThresholdReached |= hp.hitpoints < threshold;
+        });
+    });
+    return hitpointsThresholdReached;
+  }
+};
+
 class EnemyReachableTransition : public StateTransition
 {
 public:
@@ -236,6 +299,10 @@ public:
 
 
 // states
+State *create_follow_state(float followDist)
+{
+  return new FollowState(followDist);
+}
 State *create_heal_state()
 {
   return new HealState();
@@ -266,6 +333,14 @@ State *create_nop_state()
 }
 
 // transitions
+StateTransition *create_followee_close_transition(float thres)
+{
+  return new FolloweeCloseTransition(thres);
+}
+StateTransition *create_followee_hitpoints_less_than_transition(float thres)
+{
+  return new FolloweeHitpointsLessThanTransition(thres);
+}
 StateTransition *create_enemy_available_transition(float dist)
 {
   return new EnemyAvailableTransition(dist);

@@ -82,6 +82,24 @@ void add_heal_sm(flecs::entity entity)
   });
 }
 
+void add_squire_sm(flecs::entity entity)
+{
+  entity.get([](StateMachine &sm)
+  {
+    int follow = sm.addState(create_follow_state(2.f));
+    int moveToEnemy = sm.addState(create_move_to_enemy_state());
+    int heal = sm.addState(create_heal_state());
+
+    sm.addTransition(create_enemy_available_transition(3.f), follow, moveToEnemy);
+    sm.addTransition(create_negate_transition(create_enemy_available_transition(4.f)), moveToEnemy, follow);
+
+    sm.addTransition(create_and_transition(create_followee_hitpoints_less_than_transition(60.f), create_followee_close_transition(4.0f)), follow, heal);
+
+    sm.addTransition(create_negate_transition(create_followee_hitpoints_less_than_transition(100.f)), heal, follow);
+    sm.addTransition(create_negate_transition(create_followee_close_transition(4.f)), heal, follow);
+  });
+}
+
 static flecs::entity create_monster(flecs::world &ecs, int x, int y, uint32_t color)
 {
   return ecs.entity()
@@ -97,28 +115,29 @@ static flecs::entity create_monster(flecs::world &ecs, int x, int y, uint32_t co
     .set(MeleeDamage{20.f});
 }
 
-static flecs::entity create_healing_monster(flecs::world &ecs, int x, int y)
+static flecs::entity create_healing_monster(flecs::world &ecs, int x, int y, uint32_t color = 0xffff00ff)
 {
-  return ecs.entity()
-    .set(Position{x, y})
-    .set(MovePos{x, y})
-    .set(PatrolPos{x, y})
-    .set(Hitpoints{100.f})
-    .set(Action{EA_NOP})
-    .set(Color{0xffff00ff})
-    .set(StateMachine{})
-    .set(Team{1})
-    .set(NumActions{1, 0})
+  auto base = create_monster(ecs, x, y, color);
+  return base
     .set(HealCooldown{4})
-    .set(HealTarget{})
+    .set(HealTarget{base}) // will it work??
     .set(TickCount{})
-    .set(HealAmount{10.f})
-    .set(MeleeDamage{20.f});
+    .set(HealAmount{10.f});
 }
 
-static void create_player(flecs::world &ecs, int x, int y)
+static flecs::entity create_squire(flecs::world &ecs, int x, int y, uint32_t color, flecs::entity followee)
 {
-  ecs.entity("player")
+    return create_healing_monster(ecs, x, y, color)
+        .set(FollowTarget{followee})
+        .set(Team{0})
+        .set(HealCooldown{10})
+        .set(HealAmount{20.f})
+        .set(HealTarget{followee});
+}
+
+static auto create_player(flecs::world &ecs, int x, int y)
+{
+  return ecs.entity("player")
     .set(Position{x, y})
     .set(MovePos{x, y})
     .set(Hitpoints{100.f})
@@ -195,7 +214,8 @@ void init_roguelike(flecs::world &ecs)
   add_berserker_sm(create_monster(ecs, 6, 6, 0xffffffff));
   add_heal_sm(create_healing_monster(ecs, 7, 6));
 
-  create_player(ecs, 0, 0);
+  auto player = create_player(ecs, 0, 0);
+  add_squire_sm(create_squire(ecs, 2, 2, 0xffeeee00, player));
 
   create_powerup(ecs, 7, 7, 10.f);
   create_powerup(ecs, 10, -6, 10.f);

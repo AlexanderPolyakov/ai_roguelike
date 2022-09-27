@@ -99,10 +99,12 @@ struct HealAmount
   float amount = 0.f;
 };
 
-struct HealTarget
-{
+struct EntityContainer {
     flecs::entity target;
 };
+
+struct HealTarget : EntityContainer {};
+struct FollowTarget : EntityContainer {};
 
 struct PowerupAmount
 {
