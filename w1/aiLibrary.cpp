@@ -79,17 +79,14 @@ public:
   void exit() const override {}
   void act(float/* dt*/, flecs::world&, flecs::entity entity) const override
   {
-    entity.set([&](const TickCount& count, Hitpoints& hitpoints, HealCooldown& cooldown, const HealAmount& amount, Color& color, Action& a)
+    entity.set([&](const TickCount& count, HealTarget& target, Hitpoints& hitpoints, HealCooldown& cooldown, const HealAmount& amount, Color& color, Action& a)
     {
+        target.target = entity;
         a.action = EA_NOP;
         color.color = 0xffff0000 + int((hitpoints.hitpoints / 100.0f) * 255.0f);
         if (cooldown.next <= count.count) 
         {
-            std::cout << "Heal: " << hitpoints.hitpoints << " " << cooldown.next  << "  " << count.count << "\n";
-            hitpoints.hitpoints += amount.amount;   
-            cooldown.next = cooldown.cooldown + count.count;
-        } else {
-            std::cout << "this\n";
+            a.action = EA_HEAL;
         }
     });
   }

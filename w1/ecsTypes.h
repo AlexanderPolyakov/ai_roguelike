@@ -1,4 +1,5 @@
 #pragma once
+#include "flecs_inc.h"
 
 struct Position;
 struct MovePos;
@@ -60,7 +61,8 @@ enum Actions
   EA_MOVE_UP,
   EA_MOVE_END,
   EA_ATTACK = EA_MOVE_END,
-  EA_NUM
+  EA_NUM,
+  EA_HEAL
 };
 
 struct Action
@@ -95,6 +97,11 @@ struct MeleeDamage
 struct HealAmount
 {
   float amount = 0.f;
+};
+
+struct HealTarget
+{
+    flecs::entity target;
 };
 
 struct PowerupAmount

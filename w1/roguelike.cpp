@@ -4,6 +4,7 @@
 #include "stateMachine.h"
 #include "aiLibrary.h"
 #include "app.h"
+#include <iostream>
 
 //for scancodes
 #include <GLFW/glfw3.h>
@@ -109,6 +110,7 @@ static flecs::entity create_healing_monster(flecs::world &ecs, int x, int y)
     .set(Team{1})
     .set(NumActions{1, 0})
     .set(HealCooldown{4})
+    .set(HealTarget{})
     .set(TickCount{})
     .set(HealAmount{10.f})
     .set(MeleeDamage{20.f});
@@ -179,10 +181,6 @@ static void register_roguelike_systems(flecs::world &ecs)
       dde.end();
     });
 
-  ecs.system<TickCount>()
-      .each([&](TickCount& count) {
-            ++count.count;
-      });
 }
 
 
@@ -247,12 +245,28 @@ static void process_actions(flecs::world &ecs)
 {
   static auto processActions = ecs.query<Action, Position, MovePos, const MeleeDamage, const Team>();
   static auto checkAttacks = ecs.query<const MovePos, Hitpoints, const Team>();
+  static auto healQuery = ecs.query<const HealTarget, Hitpoints, const TickCount, HealCooldown, const HealAmount>();
   // Process all actions
   ecs.defer([&]
   {
     processActions.each([&](flecs::entity entity, Action &a, Position &pos, MovePos &mpos, const MeleeDamage &dmg, const Team &team)
     {
       Position nextPos = move_pos(pos, a.action);
+      if (a.action == EA_HEAL) {
+        auto target = *entity.get<HealTarget>();
+        auto hp = target.target.get<Hitpoints>();
+        if (hp == nullptr) {
+            return;
+        }
+
+        std::cout << "Heal: " << target.target.get<Hitpoints>()->hitpoints << '\n';
+        auto& amount = *entity.get<HealAmount>();
+        auto& cooldown = *entity.get<HealCooldown>();
+        auto& count = *entity.get<TickCount>();
+
+        entity.set<HealCooldown>({cooldown.cooldown, cooldown.cooldown + count.count});
+        target.target.set<Hitpoints>({hp->hitpoints + amount.amount});
+      }
       bool blocked = false;
       checkAttacks.each([&](flecs::entity enemy, const MovePos &epos, Hitpoints &hp, const Team &enemy_team)
       {
@@ -316,8 +330,16 @@ static void process_actions(flecs::world &ecs)
 void process_turn(flecs::world &ecs)
 {
   static auto stateMachineAct = ecs.query<StateMachine>();
+  static auto tickCountAct = ecs.query<TickCount>();
   if (is_player_acted(ecs))
   {
+    ecs.defer([&]
+    {
+      tickCountAct.each([&](TickCount &count)
+      {
+          ++count.count;
+      });
+    });
     if (upd_player_actions_count(ecs))
     {
       // Plan action for NPCs
