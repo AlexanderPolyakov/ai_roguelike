@@ -1,0 +1,19 @@
+@startuml
+
+scale 1080 width
+
+state Follow
+state Attack
+state Heal
+
+[*] --> Follow
+
+Follow --> Attack : EnemyAvailable
+Attack --> Follow : not Enemy Available
+
+Follow --> Heal : Hero has low hp AND Near hero
+Heal --> Follow : Hero has high hp
+Heal --> Follow : Hero is far away
+
+@enduml
+

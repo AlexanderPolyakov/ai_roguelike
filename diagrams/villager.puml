@@ -1,0 +1,41 @@
+@startuml
+
+scale 1080 width
+
+state Wander {
+  state "Patrol" as patrol
+  state "FleeFromEnemy" as flee
+  Wander --> patrol
+  patrol --> flee : EnemyAvailable
+  flee --> patrol : not EnemyAvailable
+}
+
+state Hunger {
+  state "Find Food" as find
+  state "Eat" as eat
+  Hunger --> find
+  find --> eat : near food
+  eat --> find : far from food
+}
+
+state Sleep {
+  state "Find Home" as hfind
+  state "Do sleep" as sleep
+  Sleep --> hfind
+  hfind --> sleep : near home
+  sleep --> hfind : far from home
+}
+
+
+
+Wander --> Hunger : low saturation
+Hunger --> Wander : high saturation
+
+Wander --> Sleep : high sleepiness
+Sleep --> Wander : low sleepiness
+
+Hunger --> Wander : EnemyAvailable
+Sleep --> Wander : EnemyAvailable
+
+@enduml
+

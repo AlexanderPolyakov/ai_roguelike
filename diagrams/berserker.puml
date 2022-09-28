@@ -1,0 +1,16 @@
+@startuml
+
+scale 1080 width
+
+state Patrol
+state Attack
+state AttackInfinite
+
+[*] --> Patrol
+
+Patrol --> Attack : EnemyAvailable
+Attack --> Patrol : not Enemy Available
+Patrol --> AttackInfinite : LowHp
+
+@enduml
+

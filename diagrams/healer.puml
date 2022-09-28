@@ -1,0 +1,20 @@
+@startuml
+
+scale 1080 width
+
+state Patrol
+state Attack
+state Heal
+
+[*] --> Patrol
+
+Patrol --> Attack : EnemyAvailable
+Attack --> Patrol : not Enemy Available
+
+Patrol --> Heal : Low HP
+Attack --> Heal : Low HP
+
+Heal --> Patrol : High HP
+
+@enduml
+
