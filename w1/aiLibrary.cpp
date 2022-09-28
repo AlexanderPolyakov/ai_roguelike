@@ -4,8 +4,22 @@
 #include <bx/rng.h>
 #include <cfloat>
 #include <cmath>
+#include <iostream>
+
 
 static bx::RngShr3 rng;
+
+class StateMachineState : public State
+{
+    std::unique_ptr<StateMachine> m_state_machine;
+public:
+    StateMachineState(std::unique_ptr<StateMachine>&& sm): m_state_machine(std::move(sm)) {}
+    void enter() const override {} 
+    void exit() const override {} 
+    void act(float/* dt*/, flecs::world & ecs, flecs::entity entity) const override {
+        m_state_machine->act(0.f, ecs, entity); // needed as m_state_machine is not in ecs
+    }
+};
 
 class AttackEnemyState : public State
 {
@@ -70,7 +84,62 @@ static void on_closest_enemy_pos(flecs::world &ecs, flecs::entity entity, Callab
   });
 }
 
-#include <iostream>
+class SleepState : public State
+{
+public:
+  void enter() const override { std::cout << "Sleeping...\n"; }
+  void exit() const override {}
+  void act(float/* dt*/, flecs::world &/*ecs*/, flecs::entity entity) const override {
+    entity.set([&](SleepinessLevel& sleep, Action& a){
+        sleep.value += 15.0f;
+        a.action = EA_SLEEP;
+        std::cout << "Sleeping...\n";
+    });
+  }
+};
+class SearchHomeState : public State
+{
+public:
+  void enter() const override {}
+  void exit() const override {std::cout << "no longer searching home\n";}
+  void act(float/* dt*/, flecs::world &/*ecs*/, flecs::entity entity) const override {
+    entity.set([&](Position& pos, HomePosition& hpos, Action& a){
+      a.action = move_towards(pos, hpos);
+      std::cout << "Searching home...\n";
+    });
+  }
+};
+class Eat : public State
+{
+public:
+  void enter() const override {
+    std::cout << "Eating!\n";
+  }
+  void exit() const override {}
+  void act(float/* dt*/, flecs::world &/*ecs*/, flecs::entity entity) const override {
+    entity.set([&](HungerLevel& hunger, Action& a){
+        hunger.value += 15.0f;
+        a.action = EA_EAT;
+        std::cout << "Saturation: " << hunger.value << '\n';
+    });
+  }
+};
+
+class SearchFood : public State
+{
+public:
+  void enter() const override {}
+  void exit() const override {std::cout << "no longer searching food\n";}
+  void act(float/* dt*/, flecs::world &/*ecs*/, flecs::entity entity) const override {
+    entity.set([&](Position& pos, FoodSourceTarget& hpos, Action& a){
+      a.action = move_towards(pos, hpos);
+      std::cout << "Searching food: " << pos.x << ' ' << pos.y 
+        << " to " << hpos.x << ' ' << hpos.y 
+        << " action: " << a.action << '\n';
+    });
+  }
+};
+
 class HealState : public State
 {
 public:
@@ -176,6 +245,64 @@ public:
   void enter() const override {}
   void exit() const override {}
   void act(float/* dt*/, flecs::world &, flecs::entity) const override {}
+};
+
+template <typename Component>
+class CloseToPointTransition : public StateTransition
+{
+    float triggerDist;
+public:
+    CloseToPointTransition(float dist) : triggerDist(dist) {}
+    bool isAvailable(flecs::world&, flecs::entity entity) const override
+    {
+        bool reached = false;
+        entity.get([&](const Component &fpos, const Position& pos)
+        {
+            auto dx = pos.x - fpos.x;
+            auto dy = pos.y - fpos.y;
+            reached = triggerDist * triggerDist > dx*dx + dy*dy;
+        });
+        return reached;
+    }
+};
+
+class FoodCloseTransition : public CloseToPointTransition<FoodSourceTarget> {
+    using CloseToPointTransition::CloseToPointTransition;
+};
+class HomeCloseTransition : public CloseToPointTransition<HomePosition> {
+    using CloseToPointTransition::CloseToPointTransition;
+};
+
+template<typename Component>
+class CompareThreshold : public StateTransition {
+protected:
+    float threshold;
+public:
+    CompareThreshold(float threshold) : threshold(threshold) {}
+    bool isAvailable(flecs::world&, flecs::entity entity) const override {
+        bool result = false;
+        entity.get([&](const Component& cmp){
+            result = cmp.value < threshold;
+        });
+        return result;
+    }
+};
+
+class HungryTransition : public CompareThreshold<HungerLevel> {
+    using CompareThreshold::CompareThreshold;
+    bool isAvailable(flecs::world& w, flecs::entity entity) const override {
+        auto res = this->CompareThreshold::isAvailable(w, entity);
+        std::cout << "Hungry transition: " << threshold << " res: " << res << '\n';
+        return res;
+    }
+};
+class SleepyTransition : public CompareThreshold<SleepinessLevel> {
+    using CompareThreshold::CompareThreshold;
+    bool isAvailable(flecs::world& w, flecs::entity entity) const override {
+        auto res = this->CompareThreshold::isAvailable(w, entity);
+        std::cout << "Sleepy transition: " << threshold << " res: " << res << '\n';
+        return res;
+    }
 };
 
 class EnemyAvailableTransition : public StateTransition
@@ -299,6 +426,26 @@ public:
 
 
 // states
+State *create_sleep_state()
+{
+    return new SleepState();
+}
+State *create_search_home_state()
+{
+    return new SearchHomeState();
+}
+State *create_eat_state()
+{
+    return new Eat();
+}
+State *create_search_food_state()
+{
+    return new SearchFood();
+}
+State *create_sm_state(std::unique_ptr<StateMachine>&& sm) 
+{
+    return new StateMachineState(std::move(sm));
+}
 State *create_follow_state(float followDist)
 {
   return new FollowState(followDist);
@@ -333,6 +480,22 @@ State *create_nop_state()
 }
 
 // transitions
+StateTransition *create_sleepy_transition(float thres)
+{
+    return new SleepyTransition(thres);
+}
+StateTransition *create_hungry_transition(float thres)
+{
+    return new HungryTransition(thres);
+}
+StateTransition *create_home_close_transition(float thres)
+{
+  return new HomeCloseTransition(thres);
+}
+StateTransition *create_food_close_transition(float thres)
+{
+  return new FoodCloseTransition(thres);
+}
 StateTransition *create_followee_close_transition(float thres)
 {
   return new FolloweeCloseTransition(thres);

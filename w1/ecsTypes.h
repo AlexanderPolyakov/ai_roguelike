@@ -46,6 +46,9 @@ struct PatrolPos
   int y = 0;
 };
 
+struct FoodSourceTarget : Position {};
+struct HomePosition : Position {};
+
 struct Hitpoints
 {
   float hitpoints = 10.f;
@@ -61,8 +64,10 @@ enum Actions
   EA_MOVE_UP,
   EA_MOVE_END,
   EA_ATTACK = EA_MOVE_END,
-  EA_NUM,
-  EA_HEAL
+  EA_HEAL,
+  EA_EAT,
+  EA_SLEEP,
+  EA_NUM
 };
 
 struct Action
@@ -98,6 +103,12 @@ struct HealAmount
 {
   float amount = 0.f;
 };
+
+struct FloatContainer {
+    float value;
+};
+struct HungerLevel : FloatContainer {};
+struct SleepinessLevel : FloatContainer {};
 
 struct EntityContainer {
     flecs::entity target;
