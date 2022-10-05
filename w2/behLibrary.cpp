@@ -30,9 +30,8 @@ struct Sequence : public CompoundNode
     for (BehNode *node : nodes)
     {
       BehResult res = node->update(ecs, entity, bb);
-      if (res == BEH_SUCCESS)
-        continue;
-      return res;
+      if (res != BEH_SUCCESS)
+        return res;
     }
     return BEH_SUCCESS;
   }
@@ -45,9 +44,8 @@ struct Selector : public CompoundNode
     for (BehNode *node : nodes)
     {
       BehResult res = node->update(ecs, entity, bb);
-      if (res == BEH_FAIL)
-        continue;
-      return res;
+      if (res != BEH_FAIL)
+        return res;
     }
     return BEH_FAIL;
   }

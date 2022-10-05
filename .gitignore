@@ -34,7 +34,7 @@
 # Visual studio
 *.ipch
 *.suo
-*.VC.db
+*.VC.*
 *.tlog
 *.user
 *.pdb
