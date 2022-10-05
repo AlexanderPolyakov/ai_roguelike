@@ -2,6 +2,8 @@
 #include <flecs.h>
 #include "ecsTypes.h"
 #include <bx/rng.h>
+#include <cfloat>
+#include <cmath>
 
 static bx::RngShr3 rng;
 
