@@ -30,3 +30,19 @@
 *.exe
 *.out
 *.app
+
+# Visual studio
+*.ipch
+*.suo
+*.VC.*
+*.tlog
+*.user
+*.pdb
+*.log
+*.idb
+*.recipe
+*.exp
+*.ilk
+*.vcxproj.*
+*.iobj
+*.ipdb

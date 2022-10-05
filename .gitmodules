@@ -16,3 +16,6 @@
 [submodule "3rdParty/bgfx.cmake"]
 	path = 3rdParty/bgfx.cmake
 	url = https://github.com/bkaradzic/bgfx.cmake
+[submodule "3rdParty/raylib"]
+	path = 3rdParty/raylib
+	url = https://github.com/raysan5/raylib.git
