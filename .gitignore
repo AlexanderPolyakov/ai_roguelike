@@ -44,3 +44,5 @@
 *.exp
 *.ilk
 *.vcxproj.*
+*.iobj
+*.ipdb
