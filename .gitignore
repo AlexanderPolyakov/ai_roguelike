@@ -36,3 +36,11 @@
 *.suo
 *.VC.db
 *.tlog
+*.user
+*.pdb
+*.log
+*.idb
+*.recipe
+*.exp
+*.ilk
+*.vcxproj.*
