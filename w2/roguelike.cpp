@@ -102,7 +102,7 @@ static void register_roguelike_systems(flecs::world &ecs)
     .term<TextureSource>(flecs::Wildcard).not_()
     .each([&](const Position &pos, const Color color)
     {
-      const Rectangle rect = {(float)pos.x, (float)pos.y, 1, 1};
+      const Rectangle rect = {float(pos.x), float(pos.y), 1, 1};
       DrawRectangleRec(rect, color);
     });
   ecs.system<const Position, const Color>()
@@ -112,7 +112,7 @@ static void register_roguelike_systems(flecs::world &ecs)
       const auto textureSrc = e.target<TextureSource>();
       DrawTextureQuad(*textureSrc.get<Texture2D>(),
           Vector2{1, 1}, Vector2{0, 0},
-          Rectangle{(float)pos.x, (float)pos.y, 1, 1}, color);
+          Rectangle{float(pos.x), float(pos.y), 1, 1}, color);
     });
 }
 
@@ -210,7 +210,7 @@ static void process_actions(flecs::world &ecs)
         mpos = nextPos;
     });
     // now move
-    processActions.each([&](flecs::entity entity, Action &a, Position &pos, MovePos &mpos, const MeleeDamage &, const Team&)
+    processActions.each([&](Action &a, Position &pos, MovePos &mpos, const MeleeDamage &, const Team&)
     {
       pos = mpos;
       a.action = EA_NOP;
@@ -284,8 +284,8 @@ void print_stats(flecs::world &ecs)
   static auto playerStatsQuery = ecs.query<const IsPlayer, const Hitpoints, const MeleeDamage>();
   playerStatsQuery.each([&](const IsPlayer &, const Hitpoints &hp, const MeleeDamage &dmg)
   {
-    DrawText(TextFormat("hp: %d", (int)hp.hitpoints), 20, 20, 20, WHITE);
-    DrawText(TextFormat("power: %d", (int)dmg.damage), 20, 40, 20, WHITE);
+    DrawText(TextFormat("hp: %d", int(hp.hitpoints)), 20, 20, 20, WHITE);
+    DrawText(TextFormat("power: %d", int(dmg.damage)), 20, 40, 20, WHITE);
   });
 }
 

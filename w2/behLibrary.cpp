@@ -53,13 +53,13 @@ struct Selector : public CompoundNode
 
 struct MoveToEntity : public BehNode
 {
-  size_t entityBb = -1; // wraps to 0xff...
+  size_t entityBb = size_t(-1); // wraps to 0xff...
   MoveToEntity(flecs::entity entity, const char *bb_name)
   {
     entityBb = reg_entity_blackboard_var<flecs::entity>(entity, bb_name);
   }
 
-  BehResult update(flecs::world &ecs, flecs::entity entity, Blackboard &bb) override
+  BehResult update(flecs::world &, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_RUNNING;
     entity.set([&](Action &a, const Position &pos)
@@ -90,7 +90,7 @@ struct IsLowHp : public BehNode
   float threshold = 0.f;
   IsLowHp(float thres) : threshold(thres) {}
 
-  BehResult update(flecs::world &ecs, flecs::entity entity, Blackboard &bb) override
+  BehResult update(flecs::world &, flecs::entity entity, Blackboard &) override
   {
     BehResult res = BEH_SUCCESS;
     entity.get([&](const Hitpoints &hp)
@@ -103,7 +103,7 @@ struct IsLowHp : public BehNode
 
 struct FindEnemy : public BehNode
 {
-  size_t entityBb = -1;
+  size_t entityBb = size_t(-1);
   float distance = 0;
   FindEnemy(flecs::entity entity, float in_dist, const char *bb_name) : distance(in_dist)
   {
@@ -142,13 +142,13 @@ struct FindEnemy : public BehNode
 
 struct Flee : public BehNode
 {
-  size_t entityBb = -1;
+  size_t entityBb = size_t(-1);
   Flee(flecs::entity entity, const char *bb_name)
   {
     entityBb = reg_entity_blackboard_var<flecs::entity>(entity, bb_name);
   }
 
-  BehResult update(flecs::world &ecs, flecs::entity entity, Blackboard &bb) override
+  BehResult update(flecs::world &, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_RUNNING;
     entity.set([&](Action &a, const Position &pos)
@@ -170,7 +170,7 @@ struct Flee : public BehNode
 
 struct Patrol : public BehNode
 {
-  size_t pposBb = -1;
+  size_t pposBb = size_t(-1);
   float patrolDist = 1.f;
   Patrol(flecs::entity entity, float patrol_dist, const char *bb_name)
     : patrolDist(patrol_dist)
@@ -182,7 +182,7 @@ struct Patrol : public BehNode
     });
   }
 
-  BehResult update(flecs::world &ecs, flecs::entity entity, Blackboard &bb) override
+  BehResult update(flecs::world &, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_RUNNING;
     entity.set([&](Action &a, const Position &pos)

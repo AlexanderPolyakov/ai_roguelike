@@ -49,7 +49,7 @@ public:
   PatrolState(float dist) : patrolDist(dist) {}
   void enter() const override {}
   void exit() const override {}
-  void act(float/* dt*/, flecs::world &ecs, flecs::entity entity) const override
+  void act(float/* dt*/, flecs::world &, flecs::entity entity) const override
   {
     entity.set([&](const Position &pos, const PatrolPos &ppos, Action &a)
     {
@@ -69,7 +69,7 @@ class NopState : public State
 public:
   void enter() const override {}
   void exit() const override {}
-  void act(float/* dt*/, flecs::world &ecs, flecs::entity entity) const override {}
+  void act(float/* dt*/, flecs::world &, flecs::entity) const override {}
 };
 
 class EnemyAvailableTransition : public StateTransition
@@ -83,7 +83,7 @@ public:
     bool enemiesFound = false;
     entity.get([&](const Position &pos, const Team &t)
     {
-      enemiesQuery.each([&](flecs::entity enemy, const Position &epos, const Team &et)
+      enemiesQuery.each([&](const Position &epos, const Team &et)
       {
         if (t.team == et.team)
           return;
@@ -100,7 +100,7 @@ class HitpointsLessThanTransition : public StateTransition
   float threshold;
 public:
   HitpointsLessThanTransition(float in_thres) : threshold(in_thres) {}
-  bool isAvailable(flecs::world &ecs, flecs::entity entity) const override
+  bool isAvailable(flecs::world &, flecs::entity entity) const override
   {
     bool hitpointsThresholdReached = false;
     entity.get([&](const Hitpoints &hp)
@@ -114,7 +114,7 @@ public:
 class EnemyReachableTransition : public StateTransition
 {
 public:
-  bool isAvailable(flecs::world &ecs, flecs::entity entity) const override
+  bool isAvailable(flecs::world &, flecs::entity) const override
   {
     return false;
   }

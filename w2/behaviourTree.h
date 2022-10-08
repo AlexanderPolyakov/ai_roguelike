@@ -24,10 +24,10 @@ struct BehaviourTree
   BehaviourTree() = default;
   BehaviourTree(BehNode *r) : root(r) {}
 
-  BehaviourTree(const BehaviourTree &bt) = default;
+  BehaviourTree(const BehaviourTree &bt) = delete;
   BehaviourTree(BehaviourTree &&bt) = default;
 
-  BehaviourTree &operator=(const BehaviourTree &bt) = default;
+  BehaviourTree &operator=(const BehaviourTree &bt) = delete;
   BehaviourTree &operator=(BehaviourTree &&bt) = default;
 
   ~BehaviourTree() = default;

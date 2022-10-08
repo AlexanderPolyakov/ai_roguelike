@@ -5,6 +5,7 @@
 class State
 {
 public:
+  virtual ~State() {}
   virtual void enter() const = 0;
   virtual void exit() const = 0;
   virtual void act(float dt, flecs::world &ecs, flecs::entity entity) const = 0;
@@ -19,7 +20,7 @@ public:
 
 class StateMachine
 {
-  int curStateIdx = 0;
+  size_t curStateIdx = 0;
   std::vector<State*> states;
   std::vector<std::vector<std::pair<StateTransition*, int>>> transitions;
 public:
