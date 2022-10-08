@@ -13,12 +13,12 @@ static void create_minotaur_beh(flecs::entity e)
     selector({
       sequence({
         is_low_hp(50.f),
-        find_enemy(e, 4.f, "enemy"),
-        flee(e, "enemy")
+        find_enemy(e, 4.f, "flee_enemy"),
+        flee(e, "flee_enemy")
       }),
       sequence({
-        find_enemy(e, 3.f, "enemy"),
-        move_to_entity(e, "enemy")
+        find_enemy(e, 3.f, "attack_enemy"),
+        move_to_entity(e, "attack_enemy")
       }),
       patrol(e, 2.f, "patrol_pos")
     });
@@ -31,7 +31,6 @@ static flecs::entity create_monster(flecs::world &ecs, int x, int y, Color col, 
   return ecs.entity()
     .set(Position{x, y})
     .set(MovePos{x, y})
-    .set(PatrolPos{x, y})
     .set(Hitpoints{100.f})
     .set(Action{EA_NOP})
     .set(Color{col})
@@ -135,9 +134,9 @@ void init_roguelike(flecs::world &ecs)
       });
 
   create_minotaur_beh(create_monster(ecs, 5, 5, Color{0xee, 0x00, 0xee, 0xff}, "minotaur_tex"));
-  create_monster(ecs, 10, -5, Color{0xee, 0x00, 0xee, 0xff}, "minotaur_tex");
-  create_monster(ecs, -5, -5, Color{0x11, 0x11, 0x11, 0xff}, "minotaur_tex");
-  create_monster(ecs, -5, 5, Color{0, 255, 0, 255}, "minotaur_tex");
+  create_minotaur_beh(create_monster(ecs, 10, -5, Color{0xee, 0x00, 0xee, 0xff}, "minotaur_tex"));
+  create_minotaur_beh(create_monster(ecs, -5, -5, Color{0x11, 0x11, 0x11, 0xff}, "minotaur_tex"));
+  create_minotaur_beh(create_monster(ecs, -5, 5, Color{0, 255, 0, 255}, "minotaur_tex"));
 
   create_player(ecs, 0, 0, "swordsman_tex");
 
