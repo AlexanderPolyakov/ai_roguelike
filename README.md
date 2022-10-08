@@ -2,6 +2,14 @@ Learning materials for the course "AI for videogames" based on simple roguelike 
 * w1 - FSM
 * w2 - Behaviour Trees + blackboard
 
+## Dependencies
+This project uses:
+* bgfx for week1 project
+* raylib for week2 project
+* flecs for ECS
+
+## Building
+
 To build you first need to update submodules:
 ```
 git submodule sync
