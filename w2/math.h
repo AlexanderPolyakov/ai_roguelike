@@ -1,4 +1,8 @@
 #pragma once
+
+#include <cmath>
+
+
 template<typename T>
 inline T sqr(T a){ return a*a; }
 
