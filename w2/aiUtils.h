@@ -1,6 +1,8 @@
 #pragma once
 #include <flecs.h>
 #include "blackboard.h"
+#include <float.h>
+#include "math.h"
 
 template<typename T, typename U>
 inline int move_towards(const T &from, const U &to)

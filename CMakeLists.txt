@@ -8,7 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(hw1 "Build first homework" ON)
+option(hw1 "Build first homework" OFF)
+option(hw2 "Build second homework" ON)
 
 add_library(project_options INTERFACE)
 add_library(project_warnings INTERFACE)
@@ -23,5 +24,9 @@ add_subdirectory(3rdParty)
 
 if (hw1)
     add_subdirectory(w1)
+endif()
+
+if (hw2)
+    add_subdirectory(w2)
 endif()
 
