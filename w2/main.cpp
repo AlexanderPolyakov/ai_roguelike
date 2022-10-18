@@ -2,6 +2,7 @@
 //
 #include "raylib.h"
 #include <flecs.h>
+#include <algorithm>
 #include "ecsTypes.h"
 #include "roguelike.h"
 
