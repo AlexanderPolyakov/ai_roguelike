@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(hw1 "Build first homework" OFF)
-option(hw2 "Build second homework" ON)
+option(hw2 "Build second homework" OFF)
 option(hw3 "Build third homework" ON)
 
 add_library(project_options INTERFACE)

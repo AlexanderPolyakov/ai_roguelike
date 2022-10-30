@@ -31,6 +31,9 @@
 *.out
 *.app
 
+# VS Code
+.vscode
+
 # Visual studio
 *.ipch
 *.suo
@@ -53,3 +56,4 @@ CMakeFiles
 CMakeCache.txt
 *.cmake
 compile_commands.json
+build/*
