@@ -20,7 +20,7 @@ static void create_fuzzy_monster_beh(flecs::entity e)
         {
           const float hp = bb.get<float>("hp");
           const float enemyDist = bb.get<float>("enemyDist");
-          return (100.f - hp) * 3.f - 50.f * enemyDist;
+          return (100.f - hp) * 5.f - 50.f * enemyDist;
         }
       ),
       std::make_pair(
