@@ -11,6 +11,7 @@ SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(hw1 "Build first homework" OFF)
 option(hw2 "Build second homework" OFF)
 option(hw3 "Build third homework" ON)
+option(hw4 "Build 4th homework" ON)
 
 add_library(project_options INTERFACE)
 add_library(project_warnings INTERFACE)
@@ -33,4 +34,8 @@ endif()
 
 if (hw3)
     add_subdirectory(w3)
+endif()
+
+if (hw3)
+    add_subdirectory(w4)
 endif()
