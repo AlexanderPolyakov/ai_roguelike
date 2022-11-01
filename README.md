@@ -1,6 +1,8 @@
 Learning materials for the course "AI for videogames" based on simple roguelike mechanics.
 * w1 - FSM
 * w2 - Behaviour Trees + blackboard
+* w3 - Utility functions
+* w4 - Emergent behaviour
 
 ## Dependencies
 This project uses:
