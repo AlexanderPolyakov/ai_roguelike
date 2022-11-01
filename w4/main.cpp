@@ -55,7 +55,7 @@ int main(int /*argc*/, const char ** /*argv*/)
     update_camera(camera, ecs);
 
     BeginDrawing();
-      ClearBackground(GetColor(0x052c46ff));
+      ClearBackground(BLACK);
       BeginMode2D(camera);
         ecs.progress();
       EndMode2D();
