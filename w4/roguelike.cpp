@@ -6,6 +6,7 @@
 #include "blackboard.h"
 #include "math.h"
 #include "dungeonUtils.h"
+#include "dijkstraMapGen.h"
 
 static void create_fuzzy_monster_beh(flecs::entity e)
 {
@@ -150,6 +151,7 @@ static void create_powerup(flecs::world &ecs, int x, int y, float amount)
 
 static void register_roguelike_systems(flecs::world &ecs)
 {
+  static auto dungeonDataQuery = ecs.query<const DungeonData>();
   ecs.system<PlayerInput, Action, const IsPlayer>()
     .each([&](PlayerInput &inp, Action &a, const IsPlayer)
     {
@@ -178,13 +180,13 @@ static void register_roguelike_systems(flecs::world &ecs)
       const auto textureSrc = e.target<TextureSource>();
       DrawTextureQuad(*textureSrc.get<Texture2D>(),
           Vector2{1, 1}, Vector2{0, 0},
-          Rectangle{float(pos.x), float(pos.y), 1, 1}, color);
+          Rectangle{float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size}, color);
     });
   ecs.system<const Position, const Color>()
     .term<TextureSource>(flecs::Wildcard).not_()
     .each([&](const Position &pos, const Color color)
     {
-      const Rectangle rect = {float(pos.x), float(pos.y), 1, 1};
+      const Rectangle rect = {float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size};
       DrawRectangleRec(rect, color);
     });
   ecs.system<const Position, const Color>()
@@ -195,16 +197,18 @@ static void register_roguelike_systems(flecs::world &ecs)
       const auto textureSrc = e.target<TextureSource>();
       DrawTextureQuad(*textureSrc.get<Texture2D>(),
           Vector2{1, 1}, Vector2{0, 0},
-          Rectangle{float(pos.x), float(pos.y), 1, 1}, color);
+          Rectangle{float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size}, color);
     });
   ecs.system<const Position, const Hitpoints>()
     .each([&](const Position &pos, const Hitpoints &hp)
     {
       constexpr float hpPadding = 0.05f;
       const float hpWidth = 1.f - 2.f * hpPadding;
-      const Rectangle underRect = {float(pos.x + hpPadding), float(pos.y-0.25f), hpWidth, 0.1f};
+      const Rectangle underRect = {float(pos.x + hpPadding) * tile_size, float(pos.y-0.25f) * tile_size,
+                                   hpWidth * tile_size, 0.1f * tile_size};
       DrawRectangleRec(underRect, BLACK);
-      const Rectangle hpRect = {float(pos.x + hpPadding), float(pos.y-0.25f), hp.hitpoints / 100.f * hpWidth, 0.1f};
+      const Rectangle hpRect = {float(pos.x + hpPadding) * tile_size, float(pos.y-0.25f) * tile_size,
+                                hp.hitpoints / 100.f * hpWidth * tile_size, 0.1f * tile_size};
       DrawRectangleRec(hpRect, RED);
     });
 
@@ -212,6 +216,21 @@ static void register_roguelike_systems(flecs::world &ecs)
     .each([&](Texture2D &tex)
     {
       SetTextureFilter(tex, TEXTURE_FILTER_POINT);
+    });
+  ecs.system<const DijkstraMapData>()
+    .each([](const DijkstraMapData &dmap)
+    {
+      dungeonDataQuery.each([&](const DungeonData &dd)
+      {
+        for (size_t y = 0; y < dd.height; ++y)
+          for (size_t x = 0; x < dd.width; ++x)
+          {
+            const float val = dmap.map[y * dd.width + x];
+            if (val < 1e5f)
+              DrawText(TextFormat("%d", int(val)),
+                  (float(x) + 0.5f) * tile_size, (float(y) + 0.5f) * tile_size, 200, WHITE);
+          }
+      });
     });
 }
 
@@ -471,6 +490,14 @@ void process_turn(flecs::world &ecs)
       turnIncrementer.each([](TurnCounter &tc) { tc.count++; });
     }
     process_actions(ecs);
+    /*
+    std::vector<float> approachMap;
+    dmaps::gen_player_approach_map(ecs, approachMap);
+    ecs.entity("approach_map").set(DijkstraMapData{approachMap});
+    */
+    std::vector<float> fleeMap;
+    dmaps::gen_player_flee_map(ecs, fleeMap);
+    ecs.entity("flee_map").set(DijkstraMapData{fleeMap});
   }
 }
 

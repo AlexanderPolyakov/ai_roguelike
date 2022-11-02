@@ -12,8 +12,8 @@ static void update_camera(Camera2D &cam, flecs::world &ecs)
 
   playerQuery.each([&](const Position &pos, const IsPlayer &)
   {
-    cam.target.x += (pos.x - cam.target.x) * 0.1f;
-    cam.target.y += (pos.y - cam.target.y) * 0.1f;
+    cam.target.x += (pos.x * tile_size - cam.target.x) * 0.1f;
+    cam.target.y += (pos.y * tile_size - cam.target.y) * 0.1f;
   });
 }
 
@@ -46,7 +46,7 @@ int main(int /*argc*/, const char ** /*argv*/)
   camera.target = Vector2{ 0.f, 0.f };
   camera.offset = Vector2{ width * 0.5f, height * 0.5f };
   camera.rotation = 0.f;
-  camera.zoom = 64.f;
+  camera.zoom = 0.125f;
 
   SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
   while (!WindowShouldClose())

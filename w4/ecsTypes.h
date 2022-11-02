@@ -143,3 +143,8 @@ struct DungeonData
   size_t height;
 };
 
+struct DijkstraMapData
+{
+  std::vector<float> map;
+};
+
