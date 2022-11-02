@@ -3,6 +3,8 @@
 #include <cstring> // memset
 #include <cstdio> // printf
 #include <random>
+#include <chrono> // std::chrono
+#include <functional> // std::bind
 #include "ecsTypes.h"
 #include "math.h"
 
