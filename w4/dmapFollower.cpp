@@ -1,18 +1,6 @@
 #include "ecsTypes.h"
 #include "dmapFollower.h"
 
-// TODO: remove copypaste
-static void push_to_log(flecs::world &ecs, const char *msg)
-{
-  static auto queryLog = ecs.query<ActionLog, const TurnCounter>();
-  queryLog.each([&](ActionLog &l, const TurnCounter &c)
-  {
-    l.log.push_back(std::to_string(c.count) + ": " + msg);
-    if (l.log.size() > l.capacity)
-      l.log.erase(l.log.begin());
-  });
-}
-
 void process_dmap_followers(flecs::world &ecs)
 {
   static auto processDmapFollowers = ecs.query<const Position, Action, const DmapWeights>();
@@ -50,9 +38,6 @@ void process_dmap_followers(flecs::world &ecs)
           minWt = moveWeights[i];
           act.action = i;
         }
-      std::string logstr = std::string("move towards ") + std::to_string(minWt) +
-                           std::string(" from wt ") + std::to_string(moveWeights[EA_NOP]);
-      push_to_log(ecs, logstr.c_str());
     });
   });
 }

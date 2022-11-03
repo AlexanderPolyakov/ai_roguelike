@@ -564,6 +564,7 @@ void process_turn(flecs::world &ecs)
     ecs.entity("hive_map")
       .set(DijkstraMapData{hiveMap});
 
+    //ecs.entity("flee_map").add<VisualiseMap>();
     ecs.entity("hive_follower_sum")
       .set(DmapWeights{{{"hive_map", {1.f, 1.f}}, {"approach_map", {1.8f, 0.8f}}}})
       .add<VisualiseMap>();
