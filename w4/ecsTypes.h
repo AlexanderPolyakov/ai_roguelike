@@ -2,7 +2,9 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
+// TODO: make a lot of seprate files
 struct Position;
 struct MovePos;
 
@@ -148,3 +150,16 @@ struct DijkstraMapData
   std::vector<float> map;
 };
 
+struct VisualiseMap {};
+
+struct DmapWeights
+{
+  struct WtData
+  {
+    float mult = 1.f;
+    float pow = 1.f;
+  };
+  std::unordered_map<std::string, WtData> weights;
+};
+
+struct Hive {};

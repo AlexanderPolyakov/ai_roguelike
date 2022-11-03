@@ -92,11 +92,17 @@ void dmaps::gen_player_flee_map(flecs::world &ecs, std::vector<float> &map)
   });
 }
 
-void dmaps::gen_monster_pack_map(flecs::world &ecs, std::vector<float> &map)
+void dmaps::gen_hive_pack_map(flecs::world &ecs, std::vector<float> &map)
 {
-}
-
-void dmaps::gen_monster_explore_map(flecs::world &ecs, std::vector<float> &map)
-{
+  static auto hiveQuery = ecs.query<const Position, const Hive>();
+  query_dungeon_data(ecs, [&](const DungeonData &dd)
+  {
+    init_tiles(map, dd);
+    hiveQuery.each([&](const Position &pos, const Hive &)
+    {
+      map[pos.y * dd.width + pos.x] = 0.f;
+    });
+    process_dmap(map, dd);
+  });
 }
 
