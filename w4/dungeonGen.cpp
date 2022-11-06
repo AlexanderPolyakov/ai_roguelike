@@ -7,6 +7,8 @@
 #include <functional> // std::bind
 #include "ecsTypes.h"
 #include "math.h"
+#include <limits>
+
 
 void gen_drunk_dungeon(char *tiles, size_t w, size_t h)
 {
@@ -16,7 +18,7 @@ void gen_drunk_dungeon(char *tiles, size_t w, size_t h)
   memset(tiles, dungeon::wall, w * h);
 
   // generator
-  unsigned seed = unsigned(std::chrono::system_clock::now().time_since_epoch().count() % INT_MAX);
+  unsigned seed = unsigned(std::chrono::system_clock::now().time_since_epoch().count() % std::numeric_limits<int>::max());
   std::default_random_engine seedGenerator(seed);
   std::default_random_engine widthGenerator(seedGenerator());
   std::default_random_engine heightGenerator(seedGenerator());

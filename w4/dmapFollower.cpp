@@ -1,5 +1,6 @@
 #include "ecsTypes.h"
 #include "dmapFollower.h"
+#include <cmath>
 
 void process_dmap_followers(flecs::world &ecs)
 {
