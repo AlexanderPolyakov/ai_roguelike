@@ -22,9 +22,9 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: install libxrandr
+    - name: install libs for glfw
       # Install libxrandr which is required for glfw
-      run: sudo apt-get install -y libxrandr-dev
+      run: sudo apt-get install -y libxrandr-dev libxinerama-dev libx11-dev libxcursor-dev libxi-dev libxext-dev
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
