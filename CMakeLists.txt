@@ -36,6 +36,6 @@ if (hw3)
     add_subdirectory(w3)
 endif()
 
-if (hw3)
+if (hw4)
     add_subdirectory(w4)
 endif()
