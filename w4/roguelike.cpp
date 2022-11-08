@@ -36,6 +36,7 @@ static flecs::entity create_hive_monster(flecs::entity e)
 static flecs::entity create_hive(flecs::entity e)
 {
   e.add<Hive>();
+  return e;
 }
 
 
