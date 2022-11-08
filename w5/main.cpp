@@ -5,6 +5,174 @@
 #include "ecsTypes.h"
 #include "roguelike.h"
 #include "dungeonGen.h"
+#include "goapPlanner.h"
+
+enum EnemyDist
+{
+  DistMelee = 0,
+  DistRanged,
+  DistFar
+};
+
+enum HealthState
+{
+  Dead = 0,
+  Injured,
+  Healthy
+};
+
+static void debug_enemy_planner()
+{
+  goap::Planner pl = goap::create_planner();
+
+  goap::add_states_to_planner(pl,
+      {"enemy_vis",
+       "enemy_alive",
+       "have_melee",
+       "have_ranged",
+       "enemy_dist",
+       "health_state"});
+
+  goap::add_action_to_planner(pl, "wander", 1,
+      {{"health_state", Healthy}},
+      {{"enemy_vis", 1}},
+      {});
+
+  goap::add_action_to_planner(pl, "approach_enemy", 1,
+      {{"health_state", Healthy}},
+      {},
+      {{"enemy_dist", -1}});
+
+  goap::add_action_to_planner(pl, "flee_enemy", 1,
+      {{"health_state", Healthy}},
+      {},
+      {{"enemy_dist", +1}});
+
+  goap::add_action_to_planner(pl, "find_melee", 1,
+      {{"have_melee", 0}, {"health_state", Healthy}},
+      {{"have_melee", 1}},
+      {});
+
+  goap::add_action_to_planner(pl, "find_ranged", 1,
+      {{"have_ranged", 0}, {"health_state", Healthy}},
+      {{"have_ranged", 1}},
+      {});
+
+  goap::add_action_to_planner(pl, "patch_up", 1,
+      {{"health_state", Injured}},
+      {},
+      {{"health_state", +1}});
+
+  goap::add_action_to_planner(pl, "attack_enemy", 1,
+      {{"enemy_vis", 1}, {"enemy_alive", 1}, {"have_melee", 1}, {"enemy_dist", DistMelee}, {"health_state", Healthy}},
+      {{"enemy_alive", 0}},
+      {{"health_state", -1}});
+
+  goap::add_action_to_planner(pl, "shoot_enemy", 1,
+      {{"enemy_vis", 1}, {"enemy_alive", 1}, {"have_ranged", 1}, {"enemy_dist", DistRanged}, {"health_state", Healthy}},
+      {{"enemy_alive", 0}},
+      {{"health_state", -1}});
+
+  goap::WorldState ws = goap::produce_planner_worldstate(pl,
+      {{"enemy_vis", 0},
+       {"enemy_alive", 1},
+       {"have_melee", 1},
+       {"have_ranged", 0},
+       {"enemy_dist", DistFar},
+       {"health_state", Healthy}});
+
+  goap::WorldState goal = goap::produce_planner_worldstate(pl,
+      {{"enemy_alive", 0}, {"health_state", Healthy}});
+
+  std::vector<goap::PlanStep> plan;
+  goap::make_plan(pl, ws, goal, plan);
+  goap::print_plan(pl, ws, plan);
+}
+
+static void debug_looter_planner()
+{
+  goap::Planner pl = goap::create_planner();
+
+  goap::add_states_to_planner(pl,
+      {"enemy_vis",
+       "enemy_alive",
+       "loot_vis",
+       "num_loot",
+       "have_melee",
+       "have_ranged",
+       "enemy_dist",
+       "health_state",
+       "escaped"});
+
+  goap::add_action_to_planner(pl, "open_room", 1,
+      {{"health_state", Healthy}},
+      {{"enemy_vis", 1}, {"loot_vis", 1}/*, {"enemy_dist", 2}*/},
+      {});
+
+  goap::add_action_to_planner(pl, "loot", 1,
+      {{"health_state", Healthy}, {"loot_vis", 1}, {"enemy_vis", 0}},
+      {{"loot_vis", 0}},
+      {{"num_loot", +1}});
+
+  goap::add_action_to_planner(pl, "approach_enemy", 1,
+      {{"health_state", Healthy}},
+      {},
+      {{"enemy_dist", -1}});
+
+  goap::add_action_to_planner(pl, "flee_enemy", 1,
+      {{"health_state", Healthy}},
+      {},
+      {{"enemy_dist", +1}});
+
+  goap::add_action_to_planner(pl, "find_melee", 1,
+      {{"have_melee", 0}, {"health_state", Healthy}},
+      {{"have_melee", 1}},
+      {});
+
+  goap::add_action_to_planner(pl, "find_ranged", 1,
+      {{"have_ranged", 0}, {"health_state", Healthy}},
+      {{"have_ranged", 1}},
+      {});
+
+  goap::add_action_to_planner(pl, "patch_up", 1,
+      {{"health_state", Injured}},
+      {},
+      {{"health_state", +1}});
+
+  goap::add_action_to_planner(pl, "attack_enemy", 1,
+      {{"enemy_vis", 1}, {"have_melee", 1}, {"enemy_dist", DistMelee}, {"health_state", Healthy}},
+      {{"enemy_vis", 0}},
+      {{"health_state", -1}});
+
+  goap::add_action_to_planner(pl, "shoot_enemy", 1,
+      {{"enemy_vis", 1}, {"have_ranged", 1}, {"enemy_dist", DistRanged}, {"health_state", Healthy}},
+      {{"enemy_vis", 0}},
+      {{"health_state", -1}});
+
+  goap::add_action_to_planner(pl, "escape", 1,
+      {{"health_state", Healthy}, {"num_loot", 5}},
+      {{"escaped", 1}},
+      {});
+
+  goap::WorldState ws = goap::produce_planner_worldstate(pl,
+      {{"enemy_vis", 0},
+       {"enemy_alive", 1},
+       {"loot_vis", 0},
+       {"num_loot", 0},
+       {"have_melee", 1},
+       {"have_ranged", 0},
+       {"enemy_dist", DistFar},
+       {"health_state", Healthy},
+       {"escaped", 0}});
+
+  goap::WorldState goal = goap::produce_planner_worldstate(pl,
+      {{"escaped", 1}, {"health_state", Healthy}});
+
+  std::vector<goap::PlanStep> plan;
+  goap::make_plan(pl, ws, goal, plan);
+  goap::print_plan(pl, ws, plan);
+}
+
 
 static void update_camera(Camera2D &cam, flecs::world &ecs)
 {
@@ -41,6 +209,8 @@ int main(int /*argc*/, const char ** /*argv*/)
     init_dungeon(ecs, tiles, dungWidth, dungHeight);
   }
   init_roguelike(ecs);
+  debug_enemy_planner();
+  debug_looter_planner();
 
   Camera2D camera = { {0, 0}, {0, 0}, 0.f, 1.f };
   camera.target = Vector2{ 0.f, 0.f };
