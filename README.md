@@ -3,11 +3,12 @@ Learning materials for the course "AI for videogames" based on simple roguelike 
 * w2 - Behaviour Trees + blackboard
 * w3 - Utility functions
 * w4 - Emergent behaviour
+* w5 - Goal Oriented Action Planning
 
 ## Dependencies
 This project uses:
 * bgfx for week1 project
-* raylib for week2 project
+* raylib for week2 and later project
 * flecs for ECS
 
 ## Building
@@ -20,6 +21,6 @@ git submodule update --init --recursive
 
 Then you need to build using cmake:
 ```
-cmake .
-cmake --build .
+cmake -B build
+cmake --build build
 ```
