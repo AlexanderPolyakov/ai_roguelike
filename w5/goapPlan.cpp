@@ -56,10 +56,13 @@ float goap::make_plan(const Planner &planner, const WorldState &from, const Worl
     }
     closedList.push_back(cur);
     std::vector<size_t> transitions = find_valid_state_transitions(planner, cur.worldState);
+    //const bool firstIter = openList.empty();
+    //printf("------------\n");
     for (size_t actId : transitions)
     {
+      //printf("valid action: %s\n", planner.actions[actId].name.c_str());
       WorldState st = apply_action(planner, actId, cur.worldState);
-      float score = cur.g + get_action_cost(planner, actId);
+      const float score = cur.g + get_action_cost(planner, actId);
       auto openIt = std::find_if(openList.begin(), openList.end(), [&](const PlanNode &n) { return st == n.worldState; });
       auto closeIt = std::find_if(closedList.begin(), closedList.end(), [&](const PlanNode &n) { return st == n.worldState; });
       if (openIt != openList.end() && score < openIt->g)
