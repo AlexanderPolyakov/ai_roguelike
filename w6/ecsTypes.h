@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <math.h>
 
 // TODO: make a lot of seprate files
 struct Position;
@@ -69,7 +70,7 @@ inline Position truncate(const Position &v, float len)
 
 
 inline bool operator==(const Position &lhs, const Position &rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
-inline bool operator!=(const Position &lhs, const Position &rhs) { return !(lhs == rhs); };
+inline bool operator!=(const Position &lhs, const Position &rhs) { return !(lhs == rhs); }
 
 
 struct MoveSpeed
