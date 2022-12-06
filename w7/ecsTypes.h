@@ -6,8 +6,6 @@
 #include <math.h>
 
 // TODO: make a lot of seprate files
-struct Position;
-
 struct Position
 {
   float x = 0;

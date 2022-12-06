@@ -9,17 +9,6 @@
 #include "math.h"
 #include <limits>
 
-struct IVec2
-{
-  int x, y;
-};
-
-inline IVec2 operator-(const IVec2 &lhs, const IVec2 &rhs)
-{
-  return IVec2{lhs.x - rhs.x, lhs.y - rhs.y};
-}
-
-
 void gen_drunk_dungeon(char *tiles, size_t w, size_t h)
 {
   //constexpr char wall = '#';

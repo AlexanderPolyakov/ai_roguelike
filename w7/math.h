@@ -2,6 +2,19 @@
 
 #include <cmath>
 
+struct IVec2
+{
+  int x, y;
+};
+
+inline bool operator==(const IVec2 &lhs, const IVec2 &rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
+inline bool operator!=(const IVec2 &lhs, const IVec2 &rhs) { return !(lhs == rhs); }
+
+inline IVec2 operator-(const IVec2 &lhs, const IVec2 &rhs)
+{
+  return IVec2{lhs.x - rhs.x, lhs.y - rhs.y};
+}
+
 template<typename T>
 inline T sqr(T a){ return a*a; }
 

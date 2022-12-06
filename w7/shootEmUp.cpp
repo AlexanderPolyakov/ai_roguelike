@@ -5,6 +5,7 @@
 #include "steering.h"
 #include "dungeonGen.h"
 #include "dungeonUtils.h"
+#include "pathfinder.h"
 
 constexpr float tile_size = 64.f;
 
@@ -76,6 +77,66 @@ static void register_roguelike_systems(flecs::world &ecs)
         }
       });
     });
+
+  static auto cameraQuery = ecs.query<const Camera2D>();
+  ecs.system<const DungeonPortals, const DungeonData>()
+    .each([&](const DungeonPortals &dp, const DungeonData &dd)
+    {
+      size_t w = dd.width;
+      size_t ts = dp.tileSplit;
+      for (size_t y = 0; y < dd.height / ts; ++y)
+        DrawLineEx(Vector2{0.f, y * ts * tile_size},
+                   Vector2{dd.width * tile_size, y * ts * tile_size}, 1.f, GetColor(0xff000080));
+      for (size_t x = 0; x < dd.width / ts; ++x)
+        DrawLineEx(Vector2{x * ts * tile_size, 0.f},
+                   Vector2{x * ts * tile_size, dd.height * tile_size}, 1.f, GetColor(0xff000080));
+      cameraQuery.each([&](Camera2D cam)
+      {
+        Vector2 mousePosition = GetScreenToWorld2D(GetMousePosition(), cam);
+        size_t wd = w / ts;
+        for (size_t y = 0; y < dd.height / ts; ++y)
+        {
+          if (mousePosition.y < y * ts * tile_size || mousePosition.y > (y + 1) * ts * tile_size)
+            continue;
+          for (size_t x = 0; x < dd.width / ts; ++x)
+          {
+            if (mousePosition.x < x * ts * tile_size || mousePosition.x > (x + 1) * ts * tile_size)
+              continue;
+            for (size_t idx : dp.tilePortalsIndices[y * wd + x])
+            {
+              const PathPortal &portal = dp.portals[idx];
+              Rectangle rect{portal.startX * tile_size, portal.startY * tile_size,
+                             (portal.endX - portal.startX + 1) * tile_size,
+                             (portal.endY - portal.startY + 1) * tile_size};
+              DrawRectangleLinesEx(rect, 3, BLACK);
+            }
+          }
+        }
+        for (const PathPortal &portal : dp.portals)
+        {
+          Rectangle rect{portal.startX * tile_size, portal.startY * tile_size,
+                         (portal.endX - portal.startX + 1) * tile_size,
+                         (portal.endY - portal.startY + 1) * tile_size};
+          Vector2 fromCenter{rect.x + rect.width * 0.5f, rect.y + rect.height * 0.5f};
+          DrawRectangleLinesEx(rect, 1, WHITE);
+          if (mousePosition.x < rect.x || mousePosition.x > rect.x + rect.width ||
+              mousePosition.y < rect.y || mousePosition.y > rect.y + rect.height)
+            continue;
+          DrawRectangleLinesEx(rect, 4, WHITE);
+          for (const PortalConnection &conn : portal.conns)
+          {
+            const PathPortal &endPortal = dp.portals[conn.connIdx];
+            Vector2 toCenter{(endPortal.startX + endPortal.endX + 1) * tile_size * 0.5f,
+                             (endPortal.startY + endPortal.endY + 1) * tile_size * 0.5f};
+            DrawLineEx(fromCenter, toCenter, 1.f, WHITE);
+            DrawText(TextFormat("%d", int(conn.score)),
+                     (fromCenter.x + toCenter.x) * 0.5f,
+                     (fromCenter.y + toCenter.y) * 0.5f,
+                     16, WHITE);
+          }
+        }
+      });
+    });
   steer::register_systems(ecs);
 }
 
@@ -121,6 +182,7 @@ void init_dungeon(flecs::world &ecs, char *tiles, size_t w, size_t h)
       else if (tile == dungeon::floor)
         tileEntity.add<TextureSource>(floorTex);
     }
+  prebuild_map(ecs);
 }
 
 void process_game(flecs::world &ecs)
