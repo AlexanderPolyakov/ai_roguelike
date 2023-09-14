@@ -25,26 +25,11 @@ enable_sanitizers(project_options)
 
 add_subdirectory(3rdParty)
 
-if (hw1)
-    add_subdirectory(w1)
-endif()
-
-if (hw2)
-    add_subdirectory(w2)
-endif()
-
-if (hw3)
-    add_subdirectory(w3)
-endif()
-
-if (hw4)
-    add_subdirectory(w4)
-endif()
-
-if (hw5)
-    add_subdirectory(w5)
-endif()
-
+add_subdirectory(w1)
+add_subdirectory(w2)
+add_subdirectory(w3)
+add_subdirectory(w4)
+add_subdirectory(w5)
 add_subdirectory(w6)
 add_subdirectory(w7)
 add_subdirectory(w8)

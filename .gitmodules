@@ -1,21 +1,6 @@
-[submodule "3rdParty/bgfx"]
-	path = 3rdParty/bgfx
-	url = https://github.com/bkaradzic/bgfx.git
-[submodule "3rdParty/bimg"]
-	path = 3rdParty/bimg
-	url = https://github.com/bkaradzic/bimg.git
-[submodule "3rdParty/bx"]
-	path = 3rdParty/bx
-	url = https://github.com/bkaradzic/bx.git
-[submodule "3rdParty/glfw"]
-	path = 3rdParty/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "3rdParty/flecs"]
 	path = 3rdParty/flecs
 	url = https://github.com/SanderMertens/flecs.git
-[submodule "3rdParty/bgfx.cmake"]
-	path = 3rdParty/bgfx.cmake
-	url = https://github.com/bkaradzic/bgfx.cmake
 [submodule "3rdParty/raylib"]
 	path = 3rdParty/raylib
 	url = https://github.com/raysan5/raylib.git

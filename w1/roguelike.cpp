@@ -1,12 +1,8 @@
 #include "roguelike.h"
 #include "ecsTypes.h"
-#include <debugdraw/debugdraw.h>
+#include "raylib.h"
 #include "stateMachine.h"
 #include "aiLibrary.h"
-#include "app.h"
-
-//for scancodes
-#include <GLFW/glfw3.h>
 
 static void add_patrol_attack_flee_sm(flecs::entity entity)
 {
@@ -48,7 +44,7 @@ static void add_attack_sm(flecs::entity entity)
   });
 }
 
-static flecs::entity create_monster(flecs::world &ecs, int x, int y, uint32_t color)
+static flecs::entity create_monster(flecs::world &ecs, int x, int y, Color color)
 {
   return ecs.entity()
     .set(Position{x, y})
@@ -69,7 +65,7 @@ static void create_player(flecs::world &ecs, int x, int y)
     .set(Position{x, y})
     .set(MovePos{x, y})
     .set(Hitpoints{100.f})
-    .set(Color{0xffeeeeee})
+    .set(GetColor(0xeeeeeeff))
     .set(Action{EA_NOP})
     .add<IsPlayer>()
     .set(Team{0})
@@ -83,7 +79,7 @@ static void create_heal(flecs::world &ecs, int x, int y, float amount)
   ecs.entity()
     .set(Position{x, y})
     .set(HealAmount{amount})
-    .set(Color{0xff4444ff});
+    .set(GetColor(0x44ff44ff));
 }
 
 static void create_powerup(flecs::world &ecs, int x, int y, float amount)
@@ -91,7 +87,7 @@ static void create_powerup(flecs::world &ecs, int x, int y, float amount)
   ecs.entity()
     .set(Position{x, y})
     .set(PowerupAmount{amount})
-    .set(Color{0xff00ffff});
+    .set(Color{255, 255, 0, 255});
 }
 
 static void register_roguelike_systems(flecs::world &ecs)
@@ -99,10 +95,10 @@ static void register_roguelike_systems(flecs::world &ecs)
   ecs.system<PlayerInput, Action, const IsPlayer>()
     .each([&](PlayerInput &inp, Action &a, const IsPlayer)
     {
-      bool left = app_keypressed(GLFW_KEY_LEFT);
-      bool right = app_keypressed(GLFW_KEY_RIGHT);
-      bool up = app_keypressed(GLFW_KEY_UP);
-      bool down = app_keypressed(GLFW_KEY_DOWN);
+      bool left = IsKeyDown(KEY_LEFT);
+      bool right = IsKeyDown(KEY_RIGHT);
+      bool up = IsKeyDown(KEY_UP);
+      bool down = IsKeyDown(KEY_DOWN);
       if (left && !inp.left)
         a.action = EA_MOVE_LEFT;
       if (right && !inp.right)
@@ -117,15 +113,20 @@ static void register_roguelike_systems(flecs::world &ecs)
       inp.down = down;
     });
   ecs.system<const Position, const Color>()
+    .term<TextureSource>(flecs::Wildcard).not_()
     .each([&](const Position &pos, const Color color)
     {
-      DebugDrawEncoder dde;
-      dde.begin(0);
-      dde.push();
-        dde.setColor(color.color);
-        dde.drawQuad(bx::Vec3(0, 0, 1), bx::Vec3(pos.x, pos.y, 0.f), 1.f);
-      dde.pop();
-      dde.end();
+      const Rectangle rect = {float(pos.x), float(pos.y), 1, 1};
+      DrawRectangleRec(rect, color);
+    });
+  ecs.system<const Position, const Color>()
+    .term<TextureSource>(flecs::Wildcard)
+    .each([&](flecs::entity e, const Position &pos, const Color color)
+    {
+      const auto textureSrc = e.target<TextureSource>();
+      DrawTextureQuad(*textureSrc.get<Texture2D>(),
+          Vector2{1, 1}, Vector2{0, 0},
+          Rectangle{float(pos.x), float(pos.y), 1, 1}, color);
     });
 }
 
@@ -134,10 +135,10 @@ void init_roguelike(flecs::world &ecs)
 {
   register_roguelike_systems(ecs);
 
-  add_patrol_attack_flee_sm(create_monster(ecs, 5, 5, 0xffee00ee));
-  add_patrol_attack_flee_sm(create_monster(ecs, 10, -5, 0xffee00ee));
-  add_patrol_flee_sm(create_monster(ecs, -5, -5, 0xff111111));
-  add_attack_sm(create_monster(ecs, -5, 5, 0xff00ff00));
+  add_patrol_attack_flee_sm(create_monster(ecs, 5, 5, GetColor(0xee00eeff)));
+  add_patrol_attack_flee_sm(create_monster(ecs, 10, -5, GetColor(0xee00eeff)));
+  add_patrol_flee_sm(create_monster(ecs, -5, -5, GetColor(0x111111ff)));
+  add_attack_sm(create_monster(ecs, -5, 5, GetColor(0x880000ff)));
 
   create_player(ecs, 0, 0);
 
@@ -179,9 +180,9 @@ static Position move_pos(Position pos, int action)
   else if (action == EA_MOVE_RIGHT)
     pos.x++;
   else if (action == EA_MOVE_UP)
-    pos.y++;
-  else if (action == EA_MOVE_DOWN)
     pos.y--;
+  else if (action == EA_MOVE_DOWN)
+    pos.y++;
   return pos;
 }
 
@@ -277,12 +278,11 @@ void process_turn(flecs::world &ecs)
 
 void print_stats(flecs::world &ecs)
 {
-  bgfx::dbgTextClear();
   static auto playerStatsQuery = ecs.query<const IsPlayer, const Hitpoints, const MeleeDamage>();
   playerStatsQuery.each([&](const IsPlayer &, const Hitpoints &hp, const MeleeDamage &dmg)
   {
-    bgfx::dbgTextPrintf(0, 1, 0x0f, "hp: %d", (int)hp.hitpoints);
-    bgfx::dbgTextPrintf(0, 2, 0x0f, "power: %d", (int)dmg.damage);
+    DrawText(TextFormat("hp: %d", int(hp.hitpoints)), 20, 20, 20, WHITE);
+    DrawText(TextFormat("power: %d", int(dmg.damage)), 20, 40, 20, WHITE);
   });
 }
 

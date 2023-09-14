@@ -1,11 +1,9 @@
 #include "aiLibrary.h"
 #include <flecs.h>
 #include "ecsTypes.h"
-#include <bx/rng.h>
+#include "raylib.h"
 #include <cfloat>
 #include <cmath>
-
-static bx::RngShr3 rng;
 
 class AttackEnemyState : public State
 {
@@ -31,7 +29,7 @@ static int move_towards(const T &from, const U &to)
   int deltaY = to.y - from.y;
   if (abs(deltaX) > abs(deltaY))
     return deltaX > 0 ? EA_MOVE_RIGHT : EA_MOVE_LEFT;
-  return deltaY > 0 ? EA_MOVE_UP : EA_MOVE_DOWN;
+  return deltaY < 0 ? EA_MOVE_UP : EA_MOVE_DOWN;
 }
 
 static int inverse_move(int move)
@@ -114,7 +112,7 @@ public:
       else
       {
         // do a random walk
-        a.action = EA_MOVE_START + (rng.gen() % (EA_MOVE_END - EA_MOVE_START));
+        a.action = GetRandomValue(EA_MOVE_START, EA_MOVE_END - 1);
       }
     });
   }

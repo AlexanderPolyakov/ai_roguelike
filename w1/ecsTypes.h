@@ -102,15 +102,12 @@ struct Symbol
   char symb;
 };
 
-struct Color
-{
-  uint32_t color;
-};
-
 struct IsPlayer {};
 
 struct Team
 {
   int team = 0;
 };
+
+struct TextureSource {};
 
