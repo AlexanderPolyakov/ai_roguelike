@@ -72,6 +72,7 @@ enum Actions
   EA_MOVE_END,
   EA_ATTACK = EA_MOVE_END,
   EA_HEAL_SELF,
+  EA_PASS,
   EA_NUM
 };
 
@@ -107,6 +108,7 @@ struct PlayerInput
   bool right = false;
   bool up = false;
   bool down = false;
+  bool passed = false;
 };
 
 struct Symbol

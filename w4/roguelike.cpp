@@ -162,7 +162,7 @@ static void create_player(flecs::world &ecs, const char *texture_src)
     .set(NumActions{2, 0})
     .set(Color{255, 255, 255, 255})
     .add<TextureSource>(textureSrc)
-    .set(MeleeDamage{50.f});
+    .set(MeleeDamage{20.f});
 }
 
 static void create_heal(flecs::world &ecs, int x, int y, float amount)
@@ -203,6 +203,11 @@ static void register_roguelike_systems(flecs::world &ecs)
       inp.right = right;
       inp.up = up;
       inp.down = down;
+
+      bool pass = IsKeyDown(KEY_SPACE);
+      if (pass && !inp.passed)
+        a.action = EA_PASS;
+      inp.passed = pass;
     });
   ecs.system<const Position, const Color>()
     .term<TextureSource>(flecs::Wildcard)
