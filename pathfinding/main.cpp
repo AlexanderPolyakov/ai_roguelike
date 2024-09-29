@@ -4,6 +4,8 @@
 #include <limits>
 #include <float.h>
 #include <cmath>
+#include <cstdio>
+#include <cstdint>
 #include "math.h"
 #include "dungeonGen.h"
 #include "dungeonUtils.h"
