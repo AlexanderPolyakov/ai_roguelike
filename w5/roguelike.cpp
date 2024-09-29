@@ -36,8 +36,8 @@ static void register_roguelike_systems(flecs::world &ecs)
       inp.down = down;
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard)
-    .term<BackgroundTile>()
+    .with<TextureSource>()
+    .with<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
       const auto textureSrc = e.target<TextureSource>();
@@ -46,15 +46,15 @@ static void register_roguelike_systems(flecs::world &ecs)
           Rectangle{float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size}, color);
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard).not_()
+    .without<TextureSource>()
     .each([&](const Position &pos, const Color color)
     {
       const Rectangle rect = {float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size};
       DrawRectangleRec(rect, color);
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard)
-    .term<BackgroundTile>().not_()
+    .with<TextureSource>()
+    .without<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
       const auto textureSrc = e.target<TextureSource>();
@@ -81,7 +81,7 @@ static void register_roguelike_systems(flecs::world &ecs)
       SetTextureFilter(tex, TEXTURE_FILTER_POINT);
     });
   ecs.system<const DmapWeights>()
-    .term<VisualiseMap>()
+    .with<VisualiseMap>()
     .each([&](const DmapWeights &wt)
     {
       dungeonDataQuery.each([&](const DungeonData &dd)
@@ -108,7 +108,7 @@ static void register_roguelike_systems(flecs::world &ecs)
       });
     });
   ecs.system<const DijkstraMapData>()
-    .term<VisualiseMap>()
+    .with<VisualiseMap>()
     .each([](const DijkstraMapData &dmap)
     {
       dungeonDataQuery.each([&](const DungeonData &dd)

@@ -54,6 +54,11 @@ inline float length(const Position &v)
   return sqrtf(length_sq(v));
 }
 
+inline float dot(const Position &lhs, const Position &rhs)
+{
+  return lhs.x * rhs.x + lhs.y * rhs.y;
+}
+
 inline Position normalize(const Position &v)
 {
   const float len = length(v);

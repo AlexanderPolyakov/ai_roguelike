@@ -26,7 +26,7 @@ template<typename Callable>
 inline void on_closest_enemy_pos(flecs::world &ecs, flecs::entity entity, Callable c)
 {
   static auto enemiesQuery = ecs.query<const Position, const Team>();
-  entity.set([&](const Position &pos, const Team &t, Action &a)
+  entity.insert([&](const Position &pos, const Team &t, Action &a)
   {
     flecs::entity closestEnemy;
     float closestDist = FLT_MAX;
@@ -52,7 +52,7 @@ template<typename T>
 inline size_t reg_entity_blackboard_var(flecs::entity entity, const char *bb_name)
 {
   size_t res = size_t(-1);
-  entity.set([&](Blackboard &bb)
+  entity.insert([&](Blackboard &bb)
   {
     res = bb.regName<T>(bb_name);
   });

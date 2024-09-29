@@ -51,7 +51,7 @@ public:
   void exit() const override {}
   void act(float/* dt*/, flecs::world &, flecs::entity entity) const override
   {
-    entity.set([&](const Position &pos, const PatrolPos &ppos, Action &a)
+    entity.insert([&](const Position &pos, const PatrolPos &ppos, Action &a)
     {
       if (dist(pos, ppos) > patrolDist)
         a.action = move_towards(pos, ppos); // do a recovery walk

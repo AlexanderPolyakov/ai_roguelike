@@ -51,6 +51,16 @@ float goap::get_action_cost(const Planner &planner, size_t act_id)
   return planner.actions[act_id].cost;
 }
 
+static bool not_eq_states(const goap::WorldState& lhs, const goap::WorldState& rhs)
+{
+  if (lhs.size() != rhs.size())
+    return true;
+  for (size_t i = 0; i < lhs.size(); ++i)
+    if (lhs[i] != rhs[i])
+      return true;
+  return false;
+}
+
 std::vector<size_t> goap::find_valid_state_transitions(const Planner &planner, const WorldState &from)
 {
   std::vector<size_t> res;
@@ -61,7 +71,8 @@ std::vector<size_t> goap::find_valid_state_transitions(const Planner &planner, c
     bool isValidAction = true;
     for (size_t j = 0; j < action.precondition.size() && isValidAction; ++j)
       isValidAction &= action.precondition[j] < 0 || from[j] == action.precondition[j];
-    if (isValidAction)
+    WorldState newWs = apply_action(planner, i, from);
+    if (isValidAction && not_eq_states(newWs, from))
       res.emplace_back(i);
   }
   return res;

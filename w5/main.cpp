@@ -49,14 +49,16 @@ static void debug_enemy_planner()
       {{"enemy_dist", +1}});
 
   goap::add_action_to_planner(pl, "find_melee", 1,
-      {{"have_melee", 0}, {"health_state", Healthy}},
-      {{"have_melee", 1}, {"enemy_dist", DistFar}},
+      {{"have_melee", 0}, {"health_state", Healthy}, {"enemy_vis", 0}},
+      {{"have_melee", 1}},
       {});
 
+  /*
   goap::add_action_to_planner(pl, "find_ranged", 1,
       {{"have_ranged", 0}, {"health_state", Healthy}},
-      {{"have_ranged", 1}, {"enemy_dist", DistFar}},
+      {{"have_ranged", 1}},
       {});
+      */
 
   goap::add_action_to_planner(pl, "patch_up", 1,
       {{"health_state", Injured}},
@@ -91,15 +93,15 @@ static void debug_enemy_planner()
   }
   {
     goap::WorldState ws = goap::produce_planner_worldstate(pl,
-        {{"enemy_vis", 0},
+        {{"enemy_vis", 1},
          {"enemy_alive", 1},
          {"have_melee", 0},
-         {"have_ranged", 1},
+         {"have_ranged", 0},
          {"enemy_dist", DistMelee},
-         {"health_state", Healthy}});
+         {"health_state", Injured}});
 
     goap::WorldState goal = goap::produce_planner_worldstate(pl,
-        {{"enemy_alive", 0}, {"health_state", Healthy}, {"enemy_dist", DistMelee}});
+        {{"enemy_alive", 0}, {"health_state", Healthy}, {"enemy_dist", DistFar}});
 
     std::vector<goap::PlanStep> plan;
     goap::make_plan(pl, ws, goal, plan);
@@ -119,17 +121,37 @@ static void debug_looter_planner()
        "have_ranged",
        "enemy_dist",
        "health_state",
-       "escaped"});
+       "escaped",
+       "blessed"});
 
   goap::add_action_to_planner(pl, "open_room", 1,
       {{"health_state", Healthy}},
       {{"enemy_vis", 1}, {"loot_vis", 1}, {"enemy_dist", 2}},
       {});
 
+  /*
+  goap::add_action_to_planner(pl, "pray", 1,
+      {{"health_state", Healthy}},
+      {},
+      {{"blessed", +1}});
+      */
+
   goap::add_action_to_planner(pl, "loot", 1,
       {{"health_state", Healthy}, {"loot_vis", 1}, {"enemy_vis", 0}},
       {{"loot_vis", 0}},
       {{"num_loot", +1}});
+
+  goap::add_action_to_planner(pl, "loot_blessed", 1,
+      {{"health_state", Healthy}, {"loot_vis", 1}, {"enemy_vis", 0}, {"blessed", 5}},
+      {{"loot_vis", 0}},
+      {{"num_loot", +2}});
+
+
+  goap::add_action_to_planner(pl, "loot_dang", 1,
+      {{"health_state", Healthy}, {"loot_vis", 1}, {"enemy_vis", 1}},
+      {{"loot_vis", 0}},
+      {{"num_loot", +1}, {"health_state", -1}});
+
 
   goap::add_action_to_planner(pl, "approach_enemy", 1,
       {{"health_state", Healthy}, {"enemy_vis", 1}},
@@ -161,10 +183,15 @@ static void debug_looter_planner()
       {{"enemy_vis", 0}},
       {{"health_state", -1}});
 
-  goap::add_action_to_planner(pl, "shoot_enemy", 5,
+  goap::add_action_to_planner(pl, "shoot_enemy", 1,
       {{"enemy_vis", 1}, {"have_ranged", 1}, {"enemy_dist", DistRanged}, {"health_state", Healthy}},
       {{"enemy_vis", 0}},
-      {{"health_state", -1}});
+      {});
+
+  goap::add_action_to_planner(pl, "hide", 1,
+      {{"health_state", Healthy}, {"enemy_vis", 1}},
+      {{"enemy_vis", 0}},
+      {});
 
   goap::add_action_to_planner(pl, "escape", 1,
       {{"health_state", Healthy}, {"num_loot", 5}},
@@ -179,7 +206,8 @@ static void debug_looter_planner()
        {"have_ranged", 1},
        {"enemy_dist", DistFar},
        {"health_state", Healthy},
-       {"escaped", 0}});
+       {"escaped", 0},
+       {"blessed", 0}});
 
   goap::WorldState goal = goap::produce_planner_worldstate(pl,
       {{"num_loot", 5}, {"escaped", 1}, {"health_state", Healthy}});
@@ -187,6 +215,9 @@ static void debug_looter_planner()
   std::vector<goap::PlanStep> plan;
   goap::make_plan(pl, ws, goal, plan);
   goap::print_plan(pl, ws, plan);
+
+  for (goap::PlanStep step : plan)
+    printf("%d, ", step.action);
 }
 
 

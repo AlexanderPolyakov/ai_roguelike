@@ -27,8 +27,8 @@ static void register_roguelike_systems(flecs::world &ecs)
       pos += vel * ecs.delta_time();
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard)
-    .term<BackgroundTile>()
+    .with<TextureSource>()
+    .with<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
       const auto textureSrc = e.target<TextureSource>();
@@ -37,8 +37,8 @@ static void register_roguelike_systems(flecs::world &ecs)
           Rectangle{float(pos.x), float(pos.y), tile_size, tile_size}, color);
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard)
-    .term<BackgroundTile>().not_()
+    .with<TextureSource>()
+    .without<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
       const auto textureSrc = e.target<TextureSource>();
@@ -61,7 +61,7 @@ static void register_roguelike_systems(flecs::world &ecs)
         ms.timeToSpawn -= ecs.delta_time();
         while (ms.timeToSpawn < 0.f)
         {
-          steer::Type st = steer::Type(GetRandomValue(0, steer::Type::Num - 1));
+          steer::Type st = steer::Type::StFleer;//steer::Type(GetRandomValue(0, steer::Type::Num - 1));
           const Color colors[steer::Type::Num] = {WHITE, RED, BLUE, GREEN};
           const float distances[steer::Type::Num] = {800.f, 800.f, 300.f, 300.f};
           const float dist = distances[st];
@@ -88,10 +88,12 @@ void init_shoot_em_up(flecs::world &ecs)
     .set(Texture2D{LoadTexture("assets/minotaur.png")});
 
 
+  /*
   steer::create_seeker(create_monster(ecs, {+400, +400}, WHITE, "minotaur_tex"));
   steer::create_pursuer(create_monster(ecs, {-400, +400}, RED, "minotaur_tex"));
   steer::create_evader(create_monster(ecs, {-400, -400}, BLUE, "minotaur_tex"));
   steer::create_fleer(create_monster(ecs, {+400, -400}, GREEN, "minotaur_tex"));
+  */
 
   create_player(ecs, {0, 0}, "swordsman_tex");
 

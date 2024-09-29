@@ -30,8 +30,8 @@ static void register_roguelike_systems(flecs::world &ecs)
       pos += vel * ecs.delta_time();
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard)
-    .term<BackgroundTile>()
+    .with<TextureSource>()
+    .with<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
       const auto textureSrc = e.target<TextureSource>();
@@ -40,8 +40,8 @@ static void register_roguelike_systems(flecs::world &ecs)
           Rectangle{float(pos.x), float(pos.y), tile_size, tile_size}, color);
     });
   ecs.system<const Position, const Color>()
-    .term<TextureSource>(flecs::Wildcard)
-    .term<BackgroundTile>().not_()
+    .with<TextureSource>()
+    .without<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
       const auto textureSrc = e.target<TextureSource>();
@@ -108,7 +108,7 @@ static void register_roguelike_systems(flecs::world &ecs)
               Rectangle rect{portal.startX * tile_size, portal.startY * tile_size,
                              (portal.endX - portal.startX + 1) * tile_size,
                              (portal.endY - portal.startY + 1) * tile_size};
-              DrawRectangleLinesEx(rect, 3, BLACK);
+              DrawRectangleLinesEx(rect, 5, BLACK);
             }
           }
         }

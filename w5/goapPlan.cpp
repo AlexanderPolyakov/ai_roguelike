@@ -5,6 +5,7 @@ struct PlanNode
 {
   goap::WorldState worldState;
   goap::WorldState prevState;
+  float prevG;
 
   float g = 0;
   float h = 0;
@@ -27,7 +28,7 @@ static void reconstruct_plan(PlanNode &goal_node, const std::vector<PlanNode> &c
   while (curNode.actionId != size_t(-1))
   {
     plan.push_back({curNode.actionId, curNode.worldState});
-    auto itf = std::find_if(closed.begin(), closed.end(), [&](const PlanNode &n) { return n.worldState == curNode.prevState; });
+    auto itf = std::find_if(closed.begin(), closed.end(), [&](const PlanNode &n) { return n.worldState == curNode.prevState && n.g == curNode.prevG; });
     curNode = *itf;
   }
   std::reverse(plan.begin(), plan.end());
@@ -35,7 +36,7 @@ static void reconstruct_plan(PlanNode &goal_node, const std::vector<PlanNode> &c
 
 float goap::make_plan(const Planner &planner, const WorldState &from, const WorldState &to, std::vector<PlanStep> &plan)
 {
-  std::vector<PlanNode> openList = {PlanNode{from, from, 0, heuristic(from, to), size_t(-1)}};
+  std::vector<PlanNode> openList = {PlanNode{from, from, -1, 0, heuristic(from, to), size_t(-1)}};
   std::vector<PlanNode> closedList = {};
   while (!openList.empty())
   {
@@ -69,14 +70,18 @@ float goap::make_plan(const Planner &planner, const WorldState &from, const Worl
       {
         openIt->g = score;
         openIt->prevState = cur.worldState;
+        openIt->prevG = cur.g;
+        openIt->h = heuristic(st, to);
       }
       if (closeIt != closedList.end() && score < closeIt->g)
       {
         closeIt->g = score;
         closeIt->prevState = cur.worldState;
+        closeIt->prevG = cur.g;
+        closeIt->h = heuristic(st, to);
       }
       if (closeIt == closedList.end() && openIt == openList.end())
-        openList.push_back({st, cur.worldState, score, heuristic(st, to), actId});
+        openList.push_back({st, cur.worldState, cur.g, score, heuristic(st, to), actId});
     }
   }
   return 0.f;

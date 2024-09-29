@@ -90,7 +90,7 @@ struct MoveToEntity : public BehNode
   BehResult update(flecs::world &, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_RUNNING;
-    entity.set([&](Action &a, const Position &pos)
+    entity.insert([&](Action &a, const Position &pos)
     {
       flecs::entity targetEntity = bb.get<flecs::entity>(entityBb);
       if (!targetEntity.is_alive())
@@ -141,7 +141,7 @@ struct FindEnemy : public BehNode
   {
     BehResult res = BEH_FAIL;
     static auto enemiesQuery = ecs.query<const Position, const Team>();
-    entity.set([&](const Position &pos, const Team &t)
+    entity.insert([&](const Position &pos, const Team &t)
     {
       flecs::entity closestEnemy;
       float closestDist = FLT_MAX;
@@ -179,7 +179,7 @@ struct Flee : public BehNode
   BehResult update(flecs::world &, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_RUNNING;
-    entity.set([&](Action &a, const Position &pos)
+    entity.insert([&](Action &a, const Position &pos)
     {
       flecs::entity targetEntity = bb.get<flecs::entity>(entityBb);
       if (!targetEntity.is_alive())
@@ -204,7 +204,7 @@ struct Patrol : public BehNode
     : patrolDist(patrol_dist)
   {
     pposBb = reg_entity_blackboard_var<Position>(entity, bb_name);
-    entity.set([&](Blackboard &bb, const Position &pos)
+    entity.insert([&](Blackboard &bb, const Position &pos)
     {
       bb.set<Position>(pposBb, pos);
     });
@@ -213,7 +213,7 @@ struct Patrol : public BehNode
   BehResult update(flecs::world &, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_RUNNING;
-    entity.set([&](Action &a, const Position &pos)
+    entity.insert([&](Action &a, const Position &pos)
     {
       Position patrolPos = bb.get<Position>(pposBb);
       if (dist(pos, patrolPos) > patrolDist)
@@ -233,7 +233,7 @@ struct PatchUp : public BehNode
   BehResult update(flecs::world &, flecs::entity entity, Blackboard &) override
   {
     BehResult res = BEH_SUCCESS;
-    entity.set([&](Action &a, Hitpoints &hp)
+    entity.insert([&](Action &a, Hitpoints &hp)
     {
       if (hp.hitpoints >= hpThreshold)
         return;

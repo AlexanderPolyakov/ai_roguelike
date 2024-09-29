@@ -1,5 +1,6 @@
 #include "steering.h"
 #include "ecsTypes.h"
+#include "raylib.h"
 
 struct Seeker {};
 struct Pursuer {};
@@ -26,13 +27,14 @@ static flecs::entity create_cohesion(flecs::entity e)
   return e.add<Cohesion>();
 }
 
+static flecs::entity create_flocker(flecs::entity e)
+{
+  return create_cohesion(create_alignment(create_separation(e)));
+}
+
 static flecs::entity create_steerer(flecs::entity e)
 {
-  return create_cohesion(
-      create_alignment(
-        create_separation(e.set(SteerDir{0.f, 0.f}).set(SteerAccel{1.f}))
-        )
-      );
+  return create_flocker(e.set(SteerDir{0.f, 0.f}).set(SteerAccel{1.f}));
 }
 
 flecs::entity steer::create_seeker(flecs::entity e)
@@ -74,12 +76,6 @@ void steer::register_systems(flecs::world &ecs)
 {
   static auto playerPosQuery = ecs.query<const Position, const Velocity, const IsPlayer>();
 
-  ecs.system<Velocity, const MoveSpeed, const SteerDir, const SteerAccel>()
-    .each([&](Velocity &vel, const MoveSpeed &ms, const SteerDir &sd, const SteerAccel &sa)
-    {
-      vel = Velocity{truncate(vel + truncate(sd, ms.speed) * ecs.delta_time() * sa.accel, ms.speed)};
-    });
-
   // reset steer dir
   ecs.system<SteerDir>().each([&](SteerDir &sd) { sd = {0.f, 0.f}; });
 
@@ -90,7 +86,8 @@ void steer::register_systems(flecs::world &ecs)
     {
       playerPosQuery.each([&](const Position &pp, const Velocity &, const IsPlayer &)
       {
-        sd += SteerDir{normalize(pp - p) * ms.speed - vel};
+        Position desiredVelocity = normalize(pp - p) * ms.speed;
+        sd += SteerDir{desiredVelocity - vel};
       });
     });
 
@@ -110,8 +107,20 @@ void steer::register_systems(flecs::world &ecs)
     {
       playerPosQuery.each([&](const Position &pp, const Velocity &pvel, const IsPlayer &)
       {
-        constexpr float predictTime = 4.f;
+        //const float dist = length(pp - p);
+        //const float predictTime = dist / ms.speed;
+        //constexpr float predictTime = 1.f;
+        constexpr float maxPredictTime = 4.f;
+        const Position dpos = p - pp;
+        const float dist = length(dpos);
+        const Position dvel = vel - pvel;
+        const float dotProduct = (dvel.x * dpos.x + dvel.y * dpos.y) * safeinv(dist);
+        const float interceptTime = dotProduct * safeinv(length(dvel));
+        const float predictTime = std::max(std::min(maxPredictTime, interceptTime * 1.9f), 1.f);
+
         const Position targetPos = pp + pvel * predictTime;
+        //DrawLine(p.x, p.y, targetPos.x, targetPos.y, Color{YELLOW});
+        //DrawRectangle(targetPos.x, targetPos.y, 10, 10, Color{YELLOW});
         sd += SteerDir{normalize(targetPos - p) * ms.speed - vel};
       });
     });
@@ -130,9 +139,10 @@ void steer::register_systems(flecs::world &ecs)
         const float dotProduct = (dvel.x * dpos.x + dvel.y * dpos.y) * safeinv(dist);
         const float interceptTime = dotProduct * safeinv(length(dvel));
         const float predictTime = std::max(std::min(maxPredictTime, interceptTime * 0.9f), 1.f);
+        const float maxMagnitude = ms.speed;
 
         const Position targetPos = pp + pvel * predictTime;
-        sd += SteerDir{normalize(p - targetPos) * ms.speed - vel};
+        sd += SteerDir{normalize(p - targetPos) * maxMagnitude - vel};
       });
     });
 
@@ -152,7 +162,7 @@ void steer::register_systems(flecs::world &ecs)
         const float distSq = length_sq(op - p);
         if (distSq > thresDistSq)
           return;
-        sd += SteerDir{(p - op) * safeinv(distSq) * ms.speed * thresDist - vel};
+        sd += SteerDir{(p - op) * safeinv(distSq) * ms.speed * thresDist * 0.5f - vel};
       });
     });
 
@@ -196,5 +206,10 @@ void steer::register_systems(flecs::world &ecs)
       sd += SteerDir{normalize(avgPos * safeinv(float(count)) - p) * avgPosMult - vel};
     });
 
+  ecs.system<Velocity, const MoveSpeed, const SteerDir, const SteerAccel>()
+    .each([&](Velocity &vel, const MoveSpeed &ms, const SteerDir &sd, const SteerAccel &sa)
+    {
+      vel = Velocity{truncate(vel + truncate(sd, ms.speed) * ecs.delta_time() * sa.accel, ms.speed)};
+    });
 }
 
