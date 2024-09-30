@@ -210,7 +210,7 @@ static void register_roguelike_systems(flecs::world &ecs)
       inp.passed = pass;
     });
   ecs.system<const Position, const Color>()
-    .with<TextureSource>()
+    .with<TextureSource>(flecs::Wildcard)
     .with<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
@@ -220,14 +220,14 @@ static void register_roguelike_systems(flecs::world &ecs)
           Rectangle{float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size}, color);
     });
   ecs.system<const Position, const Color>()
-    .without<TextureSource>()
+    .without<TextureSource>(flecs::Wildcard)
     .each([&](const Position &pos, const Color color)
     {
       const Rectangle rect = {float(pos.x) * tile_size, float(pos.y) * tile_size, tile_size, tile_size};
       DrawRectangleRec(rect, color);
     });
   ecs.system<const Position, const Color>()
-    .with<TextureSource>()
+    .with<TextureSource>(flecs::Wildcard)
     .without<BackgroundTile>()
     .each([&](flecs::entity e, const Position &pos, const Color color)
     {
