@@ -13,5 +13,5 @@ file(GLOB_RECURSE HW8_SOURCES2 . ./*.[ch])
 
 add_executable(hw8 ${HW8_SOURCES1} ${HW8_SOURCES2})
 target_link_libraries(hw8 PUBLIC project_options project_warnings)
-target_link_libraries(hw8 PUBLIC raylib flecs)
+target_link_libraries(hw8 PUBLIC raylib flecs_static)
 

@@ -13,5 +13,5 @@ file(GLOB_RECURSE HW1_SOURCES2 . ./*.[ch])
 
 add_executable(hw1 ${HW1_SOURCES1} ${HW1_SOURCES2})
 target_link_libraries(hw1 PUBLIC project_options project_warnings)
-target_link_libraries(hw1 PUBLIC raylib flecs)
+target_link_libraries(hw1 PUBLIC raylib flecs_static)
 
