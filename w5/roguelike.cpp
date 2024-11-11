@@ -33,6 +33,11 @@ static void register_roguelike_systems(flecs::world &ecs)
       inp.right = right;
       inp.up = up;
       inp.down = down;
+
+      bool pass = IsKeyDown(KEY_SPACE);
+      if (pass && !inp.passed)
+        a.action = EA_PASS;
+      inp.passed = pass;
     });
   ecs.system<const Position, const Color>()
     .with<TextureSource>(flecs::Wildcard)
