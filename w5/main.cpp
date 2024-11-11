@@ -229,6 +229,7 @@ static void update_camera(Camera2D &cam, flecs::world &ecs)
   {
     cam.target.x += (pos.x * tile_size - cam.target.x) * 0.1f;
     cam.target.y += (pos.y * tile_size - cam.target.y) * 0.1f;
+    cam.zoom *= (1.f - GetMouseWheelMove() * 0.1);
   });
 }
 
