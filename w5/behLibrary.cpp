@@ -140,7 +140,7 @@ struct FindEnemy : public BehNode
   BehResult update(flecs::world &ecs, flecs::entity entity, Blackboard &bb) override
   {
     BehResult res = BEH_FAIL;
-    static auto enemiesQuery = ecs.query<const Position, const Team>();
+    auto enemiesQuery = ecs.query<const Position, const Team>();
     entity.insert([&](const Position &pos, const Team &t)
     {
       flecs::entity closestEnemy;

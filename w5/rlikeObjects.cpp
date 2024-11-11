@@ -11,7 +11,7 @@ flecs::entity create_hive(flecs::entity e)
 
 static Position find_free_dungeon_tile(flecs::world &ecs)
 {
-  static auto findMonstersQuery = ecs.query<const Position, const Hitpoints>();
+  auto findMonstersQuery = ecs.query<const Position, const Hitpoints>();
   bool done = false;
   while (!done)
   {

@@ -223,7 +223,7 @@ static void debug_looter_planner()
 
 static void update_camera(Camera2D &cam, flecs::world &ecs)
 {
-  static auto playerQuery = ecs.query<const Position, const IsPlayer>();
+  auto playerQuery = ecs.query<const Position, const IsPlayer>();
 
   playerQuery.each([&](const Position &pos, const IsPlayer &)
   {

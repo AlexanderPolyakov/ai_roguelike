@@ -79,7 +79,7 @@ public:
   EnemyAvailableTransition(float in_dist) : triggerDist(in_dist) {}
   bool isAvailable(flecs::world &ecs, flecs::entity entity) const override
   {
-    static auto enemiesQuery = ecs.query<const Position, const Team>();
+    auto enemiesQuery = ecs.query<const Position, const Team>();
     bool enemiesFound = false;
     entity.get([&](const Position &pos, const Team &t)
     {

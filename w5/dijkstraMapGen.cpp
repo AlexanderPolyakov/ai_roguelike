@@ -5,7 +5,7 @@
 template<typename Callable>
 static void query_dungeon_data(flecs::world &ecs, Callable c)
 {
-  static auto dungeonDataQuery = ecs.query<const DungeonData>();
+  auto dungeonDataQuery = ecs.query<const DungeonData>();
 
   dungeonDataQuery.each(c);
 }
@@ -13,7 +13,7 @@ static void query_dungeon_data(flecs::world &ecs, Callable c)
 template<typename Callable>
 static void query_characters_positions(flecs::world &ecs, Callable c)
 {
-  static auto characterPositionQuery = ecs.query<const Position, const Team>();
+  auto characterPositionQuery = ecs.query<const Position, const Team>();
 
   characterPositionQuery.each(c);
 }
@@ -94,7 +94,7 @@ void dmaps::gen_player_flee_map(flecs::world &ecs, std::vector<float> &map)
 
 void dmaps::gen_hive_pack_map(flecs::world &ecs, std::vector<float> &map)
 {
-  static auto hiveQuery = ecs.query<const Position, const Hive>();
+  auto hiveQuery = ecs.query<const Position, const Hive>();
   query_dungeon_data(ecs, [&](const DungeonData &dd)
   {
     init_tiles(map, dd);

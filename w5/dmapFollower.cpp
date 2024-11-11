@@ -4,8 +4,8 @@
 
 void process_dmap_followers(flecs::world &ecs)
 {
-  static auto processDmapFollowers = ecs.query<const Position, Action, const DmapWeights>();
-  static auto dungeonDataQuery = ecs.query<const DungeonData>();
+  auto processDmapFollowers = ecs.query<const Position, Action, const DmapWeights>();
+  auto dungeonDataQuery = ecs.query<const DungeonData>();
 
   auto get_dmap_at = [&](const DijkstraMapData &dmap, const DungeonData &dd, size_t x, size_t y, float mult, float pow)
   {

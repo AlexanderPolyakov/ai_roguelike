@@ -14,7 +14,6 @@
 
 static void register_roguelike_systems(flecs::world &ecs)
 {
-  static auto dungeonDataQuery = ecs.query<const DungeonData>();
   ecs.system<PlayerInput, Action, const IsPlayer>()
     .each([&](PlayerInput &inp, Action &a, const IsPlayer)
     {
@@ -84,6 +83,7 @@ static void register_roguelike_systems(flecs::world &ecs)
     .with<VisualiseMap>()
     .each([&](const DmapWeights &wt)
     {
+      auto dungeonDataQuery = ecs.query<const DungeonData>();
       dungeonDataQuery.each([&](const DungeonData &dd)
       {
         for (size_t y = 0; y < dd.height; ++y)
@@ -109,8 +109,9 @@ static void register_roguelike_systems(flecs::world &ecs)
     });
   ecs.system<const DijkstraMapData>()
     .with<VisualiseMap>()
-    .each([](const DijkstraMapData &dmap)
+    .each([&](const DijkstraMapData &dmap)
     {
+      auto dungeonDataQuery = ecs.query<const DungeonData>();
       dungeonDataQuery.each([&](const DungeonData &dd)
       {
         for (size_t y = 0; y < dd.height; ++y)
@@ -187,7 +188,7 @@ void init_dungeon(flecs::world &ecs, char *tiles, size_t w, size_t h)
 
 static bool is_player_acted(flecs::world &ecs)
 {
-  static auto processPlayer = ecs.query<const IsPlayer, const Action>();
+  auto processPlayer = ecs.query<const IsPlayer, const Action>();
   bool playerActed = false;
   processPlayer.each([&](const IsPlayer, const Action &a)
   {
@@ -198,7 +199,7 @@ static bool is_player_acted(flecs::world &ecs)
 
 static bool upd_player_actions_count(flecs::world &ecs)
 {
-  static auto updPlayerActions = ecs.query<const IsPlayer, NumActions>();
+  auto updPlayerActions = ecs.query<const IsPlayer, NumActions>();
   bool actionsReached = false;
   updPlayerActions.each([&](const IsPlayer, NumActions &na)
   {
@@ -223,7 +224,7 @@ static Position move_pos(Position pos, int action)
 
 static void push_to_log(flecs::world &ecs, const char *msg)
 {
-  static auto queryLog = ecs.query<ActionLog, const TurnCounter>();
+  auto queryLog = ecs.query<ActionLog, const TurnCounter>();
   queryLog.each([&](ActionLog &l, const TurnCounter &c)
   {
     l.log.push_back(std::to_string(c.count) + ": " + msg);
@@ -234,9 +235,9 @@ static void push_to_log(flecs::world &ecs, const char *msg)
 
 static void process_actions(flecs::world &ecs)
 {
-  static auto processActions = ecs.query<Action, Position, MovePos, const MeleeDamage, const Team>();
-  static auto processHeals = ecs.query<Action, Hitpoints>();
-  static auto checkAttacks = ecs.query<const MovePos, Hitpoints, const Team>();
+  auto processActions = ecs.query<Action, Position, MovePos, const MeleeDamage, const Team>();
+  auto processHeals = ecs.query<Action, Hitpoints>();
+  auto checkAttacks = ecs.query<const MovePos, Hitpoints, const Team>();
   // Process all actions
   ecs.defer([&]
   {
@@ -278,7 +279,7 @@ static void process_actions(flecs::world &ecs)
     });
   });
 
-  static auto deleteAllDead = ecs.query<const Hitpoints>();
+  auto deleteAllDead = ecs.query<const Hitpoints>();
   ecs.defer([&]
   {
     deleteAllDead.each([&](flecs::entity entity, const Hitpoints &hp)
@@ -288,9 +289,9 @@ static void process_actions(flecs::world &ecs)
     });
   });
 
-  static auto playerPickup = ecs.query<const IsPlayer, const Position, Hitpoints, MeleeDamage>();
-  static auto healPickup = ecs.query<const Position, const HealAmount>();
-  static auto powerupPickup = ecs.query<const Position, const PowerupAmount>();
+  auto playerPickup = ecs.query<const IsPlayer, const Position, Hitpoints, MeleeDamage>();
+  auto healPickup = ecs.query<const Position, const HealAmount>();
+  auto powerupPickup = ecs.query<const Position, const PowerupAmount>();
   ecs.defer([&]
   {
     playerPickup.each([&](const IsPlayer&, const Position &pos, Hitpoints &hp, MeleeDamage &dmg)
@@ -325,11 +326,11 @@ static void push_info_to_bb(Blackboard &bb, const char *name, const T &val)
 // sensors
 static void gather_world_info(flecs::world &ecs)
 {
-  static auto gatherWorldInfo = ecs.query<Blackboard,
+  auto gatherWorldInfo = ecs.query<Blackboard,
                                           const Position, const Hitpoints,
                                           const WorldInfoGatherer,
                                           const Team>();
-  static auto alliesQuery = ecs.query<const Position, const Team>();
+  auto alliesQuery = ecs.query<const Position, const Team>();
   gatherWorldInfo.each([&](Blackboard &bb, const Position &pos, const Hitpoints &hp,
                            WorldInfoGatherer, const Team &team)
   {
@@ -356,9 +357,9 @@ static void gather_world_info(flecs::world &ecs)
 
 void process_turn(flecs::world &ecs)
 {
-  static auto stateMachineAct = ecs.query<StateMachine>();
-  static auto behTreeUpdate = ecs.query<BehaviourTree, Blackboard>();
-  static auto turnIncrementer = ecs.query<TurnCounter>();
+  auto stateMachineAct = ecs.query<StateMachine>();
+  auto behTreeUpdate = ecs.query<BehaviourTree, Blackboard>();
+  auto turnIncrementer = ecs.query<TurnCounter>();
   if (is_player_acted(ecs))
   {
     if (upd_player_actions_count(ecs))
@@ -405,14 +406,14 @@ void process_turn(flecs::world &ecs)
 
 void print_stats(flecs::world &ecs)
 {
-  static auto playerStatsQuery = ecs.query<const IsPlayer, const Hitpoints, const MeleeDamage>();
+  auto playerStatsQuery = ecs.query<const IsPlayer, const Hitpoints, const MeleeDamage>();
   playerStatsQuery.each([&](const IsPlayer &, const Hitpoints &hp, const MeleeDamage &dmg)
   {
     DrawText(TextFormat("hp: %d", int(hp.hitpoints)), 20, 20, 20, WHITE);
     DrawText(TextFormat("power: %d", int(dmg.damage)), 20, 40, 20, WHITE);
   });
 
-  static auto actionLogQuery = ecs.query<const ActionLog>();
+  auto actionLogQuery = ecs.query<const ActionLog>();
   actionLogQuery.each([&](const ActionLog &l)
   {
     int yPos = GetRenderHeight() - 20;

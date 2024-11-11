@@ -25,7 +25,7 @@ inline int inverse_move(int move)
 template<typename Callable>
 inline void on_closest_enemy_pos(flecs::world &ecs, flecs::entity entity, Callable c)
 {
-  static auto enemiesQuery = ecs.query<const Position, const Team>();
+  auto enemiesQuery = ecs.query<const Position, const Team>();
   entity.insert([&](const Position &pos, const Team &t, Action &a)
   {
     flecs::entity closestEnemy;
