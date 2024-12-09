@@ -17,6 +17,7 @@ static void update_camera(flecs::world &ecs)
     {
       cam.target.x += (pos.x - cam.target.x) * 0.1f;
       cam.target.y += (pos.y - cam.target.y) * 0.1f;
+      cam.zoom *= (1.f - GetMouseWheelMove() * 0.1);
     });
   });
 }
@@ -39,8 +40,8 @@ int main(int /*argc*/, const char ** /*argv*/)
 
   flecs::world ecs;
   {
-    constexpr size_t dungWidth = 50;
-    constexpr size_t dungHeight = 50;
+    constexpr size_t dungWidth = 100;
+    constexpr size_t dungHeight = 100;
     char *tiles = new char[dungWidth * dungHeight];
     gen_drunk_dungeon(tiles, dungWidth, dungHeight);
     init_dungeon(ecs, tiles, dungWidth, dungHeight);

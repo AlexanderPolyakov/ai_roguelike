@@ -33,8 +33,8 @@ void gen_drunk_dungeon(char *tiles, size_t w, size_t h)
 
   const int dirs[4][2] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
-  constexpr size_t numIter = 4;
-  constexpr size_t maxExcavations = 200;
+  constexpr size_t numIter = 48;
+  constexpr size_t maxExcavations = 50;
   std::vector<IVec2> startPos;
   for (size_t iter = 0; iter < numIter; ++iter)
   {
@@ -60,20 +60,45 @@ void gen_drunk_dungeon(char *tiles, size_t w, size_t h)
   }
 
   // construct a path from start pos to all other start poses
-  for (const IVec2 &spos : startPos)
-    for (const IVec2 &epos : startPos)
+  // construct a path from start pos to all other start poses
+  for (size_t i = 0; i < startPos.size()-1; ++i)
+  {
+    const IVec2 &spos = startPos[i];
+    float closestDistSq = std::numeric_limits<float>::max();
+    IVec2 closestPos = spos;
+    IVec2 lastPop = spos;
+    for (size_t j = i+1; j < startPos.size(); ++j)
     {
-      IVec2 pos = spos;
-      while (dist_sq(pos, epos) > 0.f)
+      const IVec2 &epos = startPos[j];
+      const float distSq = dist_sq(spos, epos);
+      if (distSq < closestDistSq)
       {
-        const IVec2 delta = epos - pos;
-        if (abs(delta.x) > abs(delta.y))
-          pos.x += delta.x > 0 ? 1 : -1;
-        else
-          pos.y += delta.y > 0 ? 1 : -1;
-        tiles[size_t(pos.y) * w + size_t(pos.x)] = dungeon::floor;
+        closestDistSq = distSq;
+        lastPop = closestPos;
+        closestPos = epos;
       }
     }
+    IVec2 pos = spos;
+    while (dist_sq(pos, closestPos) > 0.f)
+    {
+      const IVec2 delta = closestPos - pos;
+      if (abs(delta.x) > abs(delta.y))
+        pos.x += delta.x > 0 ? 1 : -1;
+      else
+        pos.y += delta.y > 0 ? 1 : -1;
+      tiles[size_t(pos.y) * w + size_t(pos.x)] = dungeon::floor;
+    }
+    pos = spos;
+    while (dist_sq(pos, lastPop) > 0.f)
+    {
+      const IVec2 delta = lastPop - pos;
+      if (abs(delta.x) > abs(delta.y))
+        pos.x += delta.x > 0 ? 1 : -1;
+      else
+        pos.y += delta.y > 0 ? 1 : -1;
+      tiles[size_t(pos.y) * w + size_t(pos.x)] = dungeon::floor;
+    }
+  }
 
   for (size_t y = 0; y < h; ++y)
     printf("%.*s\n", int(w), tiles + y * w);
