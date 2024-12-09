@@ -3,7 +3,7 @@
 
 Position dungeon::find_walkable_tile(flecs::world &ecs)
 {
-  static auto dungeonDataQuery = ecs.query<const DungeonData>();
+  auto dungeonDataQuery = ecs.query<const DungeonData>();
 
   Position res{0, 0};
   dungeonDataQuery.each([&](const DungeonData &dd)
@@ -22,7 +22,7 @@ Position dungeon::find_walkable_tile(flecs::world &ecs)
 
 bool dungeon::is_tile_walkable(flecs::world &ecs, Position pos)
 {
-  static auto dungeonDataQuery = ecs.query<const DungeonData>();
+  auto dungeonDataQuery = ecs.query<const DungeonData>();
 
   bool res = false;
   dungeonDataQuery.each([&](const DungeonData &dd)

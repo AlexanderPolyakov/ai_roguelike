@@ -72,7 +72,6 @@ flecs::entity steer::create_steer_beh(flecs::entity e, Type type)
 
 void steer::register_systems(flecs::world &ecs)
 {
-  static auto playerPosQuery = ecs.query<const Position, const Velocity, const IsPlayer>();
 
   ecs.system<Velocity, const MoveSpeed, const SteerDir, const SteerAccel>()
     .each([&](Velocity &vel, const MoveSpeed &ms, const SteerDir &sd, const SteerAccel &sa)
@@ -88,6 +87,7 @@ void steer::register_systems(flecs::world &ecs)
     .each([&](SteerDir &sd, const MoveSpeed &ms, const Velocity &vel,
               const Position &p, const Seeker &)
     {
+      auto playerPosQuery = ecs.query<const Position, const Velocity, const IsPlayer>();
       playerPosQuery.each([&](const Position &pp, const Velocity &, const IsPlayer &)
       {
         sd += SteerDir{normalize(pp - p) * ms.speed - vel};
@@ -98,6 +98,7 @@ void steer::register_systems(flecs::world &ecs)
   ecs.system<SteerDir, const MoveSpeed, const Velocity, const Position, const Fleer>()
     .each([&](SteerDir &sd, const MoveSpeed &ms, const Velocity &vel, const Position &p, const Fleer &)
     {
+      auto playerPosQuery = ecs.query<const Position, const Velocity, const IsPlayer>();
       playerPosQuery.each([&](const Position &pp, const Velocity &, const IsPlayer &)
       {
         sd += SteerDir{normalize(p - pp) * ms.speed - vel};
@@ -108,6 +109,7 @@ void steer::register_systems(flecs::world &ecs)
   ecs.system<SteerDir, const MoveSpeed, const Velocity, const Position, const Pursuer>()
     .each([&](SteerDir &sd, const MoveSpeed &ms, const Velocity &vel, const Position &p, const Pursuer &)
     {
+      auto playerPosQuery = ecs.query<const Position, const Velocity, const IsPlayer>();
       playerPosQuery.each([&](const Position &pp, const Velocity &pvel, const IsPlayer &)
       {
         constexpr float predictTime = 4.f;
@@ -120,6 +122,7 @@ void steer::register_systems(flecs::world &ecs)
   ecs.system<SteerDir, const MoveSpeed, const Velocity, const Position, const Evader>()
     .each([&](SteerDir &sd, const MoveSpeed &ms, const Velocity &vel, const Position &p, const Evader &)
     {
+      auto playerPosQuery = ecs.query<const Position, const Velocity, const IsPlayer>();
       playerPosQuery.each([&](const Position &pp, const Velocity &pvel,
                               const IsPlayer &)
       {
@@ -136,13 +139,13 @@ void steer::register_systems(flecs::world &ecs)
       });
     });
 
-  static auto otherPosQuery = ecs.query<const Position, const Hitpoints>();
 
   // separation is expensive!!!
   ecs.system<SteerDir, const Velocity, const MoveSpeed, const Position, const Separation>()
     .each([&](flecs::entity ent, SteerDir &sd, const Velocity &vel, const MoveSpeed &ms,
               const Position &p, const Separation &)
     {
+      auto otherPosQuery = ecs.query<const Position, const Hitpoints>();
       otherPosQuery.each([&](flecs::entity oe, const Position &op, const Hitpoints &)
       {
         if (oe == ent)
@@ -156,11 +159,11 @@ void steer::register_systems(flecs::world &ecs)
       });
     });
 
-  static auto otherVelQuery = ecs.query<const Position, const Velocity>();
   ecs.system<SteerDir, const Velocity, const MoveSpeed, const Position, const Alignment>()
     .each([&](flecs::entity ent, SteerDir &sd, const Velocity &vel, const MoveSpeed &ms,
               const Position &p, const Alignment &)
     {
+      auto otherVelQuery = ecs.query<const Position, const Velocity>();
       otherVelQuery.each([&](flecs::entity oe, const Position &op, const Velocity &ovel)
       {
         if (oe == ent)
@@ -180,6 +183,7 @@ void steer::register_systems(flecs::world &ecs)
     {
       Position avgPos{0.f, 0.f};
       size_t count = 0;
+      auto otherPosQuery = ecs.query<const Position, const Hitpoints>();
       otherPosQuery.each([&](flecs::entity oe, const Position &op, const Hitpoints &)
       {
         if (oe == ent)

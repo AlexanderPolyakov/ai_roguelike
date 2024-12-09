@@ -11,7 +11,6 @@ constexpr float tile_size = 64.f;
 
 static void register_roguelike_systems(flecs::world &ecs)
 {
-  static auto playerPosQuery = ecs.query<const Position, const IsPlayer>();
 
   ecs.system<Velocity, const MoveSpeed, const IsPlayer>()
     .each([&](Velocity &vel, const MoveSpeed &ms, const IsPlayer)
@@ -59,6 +58,7 @@ static void register_roguelike_systems(flecs::world &ecs)
   ecs.system<MonsterSpawner>()
     .each([&](MonsterSpawner &ms)
     {
+      auto playerPosQuery = ecs.query<const Position, const IsPlayer>();
       playerPosQuery.each([&](const Position &pp, const IsPlayer &)
       {
         ms.timeToSpawn -= ecs.delta_time();
@@ -78,7 +78,6 @@ static void register_roguelike_systems(flecs::world &ecs)
       });
     });
 
-  static auto cameraQuery = ecs.query<const Camera2D>();
   ecs.system<const DungeonPortals, const DungeonData>()
     .each([&](const DungeonPortals &dp, const DungeonData &dd)
     {
@@ -90,6 +89,7 @@ static void register_roguelike_systems(flecs::world &ecs)
       for (size_t x = 0; x < dd.width / ts; ++x)
         DrawLineEx(Vector2{x * ts * tile_size, 0.f},
                    Vector2{x * ts * tile_size, dd.height * tile_size}, 1.f, GetColor(0xff000080));
+      auto cameraQuery = ecs.query<const Camera2D>();
       cameraQuery.each([&](Camera2D cam)
       {
         Vector2 mousePosition = GetScreenToWorld2D(GetMousePosition(), cam);

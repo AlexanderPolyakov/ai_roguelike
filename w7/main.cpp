@@ -8,8 +8,8 @@
 
 static void update_camera(flecs::world &ecs)
 {
-  static auto cameraQuery = ecs.query<Camera2D>();
-  static auto playerQuery = ecs.query<const Position, const IsPlayer>();
+  auto cameraQuery = ecs.query<Camera2D>();
+  auto playerQuery = ecs.query<const Position, const IsPlayer>();
 
   cameraQuery.each([&](Camera2D &cam)
   {
@@ -58,7 +58,7 @@ int main(int /*argc*/, const char ** /*argv*/)
   SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
   while (!WindowShouldClose())
   {
-    static auto cameraQuery = ecs.query<Camera2D>();
+    auto cameraQuery = ecs.query<Camera2D>();
     process_game(ecs);
     update_camera(ecs);
 
